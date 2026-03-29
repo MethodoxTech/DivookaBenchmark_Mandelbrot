@@ -18,19 +18,22 @@ Mandelbrot:
 
 |Rank (by Time)|Platform|Size|Run Time (Ms)|Peak Memory|
 |-|-|-|-|-|
+|1|JavaScript (Web/MS Edge)|3 Kb|1295.80 (No startup time)|≈9.54 MB|
 |1|JavaScript (Web/Chrome)|3 Kb|1298.70 (No startup time)|≈9.54 MB|
+|1|JavaScript (Web/Brave)|3 Kb|1302.80 (No startup time)|≈9.54 MB|
 |2|C++|15 Kb|1308|18.62 Mb|
-|3|Go|2 Kb + 224 Mb|||
-|4|C# AoT|911 Kb|1355.35|17.98 Mb|
-|5|C# (.Net 10)|16.5 Mb|1357.47|26.88 Mb|
-|6|JavaScript (Node)|2 Kb + 98.2 Mb|1406.20|49.47 Mb|
+|3|C# AoT|911 Kb|1355.35|17.98 Mb|
+|4|C# (.Net 10)|16.5 Mb|1357.47|26.88 Mb|
+|5|JavaScript (Node)|2 Kb + 98.2 Mb|1406.20|49.47 Mb|
+|6|Go|2 Kb + 224 Mb|1425|20.79 Mb|
 |7|JavaScript (Web/Firefox)|3 Kb|1513.00|N/A|
 |8|Java (OpenJDK) (17.0.11)|2 Kb + 2 Kb + 301 Mb|1587.79|55.2 Mb|
-|9|Ruby (3.2.2)|1 Kb + 907 Mb|||
-|10|Python (3.13.5)|2 Kb + 139 Mb|47127.7|61.4 Mb|
-|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 Mb|||
-|12|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|||
+|9|Python (3.13.5)|2 Kb + 139 Mb|47127|61.4 Mb|
+|10|Ruby (3.2.2)|1 Kb + 907 Mb|49489|52.45 Mb|
+|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 Mb|314687|12.67 Mb|
+|N/A|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|(Too slow to test...)||
 |N/A|Haskell||||
+|N/A|Julia||||
 |N/A|Perl||||
 |N/A|Elixir||||
 |N/A|Divooka (0.75.2)||||
@@ -42,6 +45,7 @@ Mandelbrot:
 * GNU Octave is surprisingly slow.
 * JavaScript is surprisingly fast.
 * I know Octave is probably optimized for matrix operations - but raw iteration speed is 💩.
+* Ruby.. oh my Ruby...
 
 ## Records
 
@@ -153,6 +157,35 @@ Name       Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB Av
 ----       ---- --------- --------- --------- --------------- --------------- --------------- ---------------
 JS (Node)     5   1413.43   1406.20   1421.06           49.47           50.67        50659.20        51884.00
 Java          5   2054.38   1587.79   2180.13           55.00           55.20        56323.20        56520.00
+```
+
+```
+Name         Run ExitCode    TimeMs PeakMemoryMB PeakMemoryKB
+----         --- --------    ------ ------------ ------------
+Go             1        0   1524.35        20.63     21124.00
+Go             2        0   1430.81        21.00     21500.00
+Go             3        0   1570.79        21.45     21960.00
+Go             4        0   1437.50        20.39     20884.00
+Go             5        0   1425.01        20.47     20960.00
+Ruby           1        0  49693.17        52.45     53712.00
+Ruby           2        0  49644.62        52.49     53748.00
+Ruby           3        0  49489.82        52.48     53740.00
+Ruby           4        0  49720.23        52.38     53636.00
+Ruby           5        0  49634.29        52.44     53696.00
+Prolog (SWI)   1        0 314687.84        12.66     12960.00
+Prolog (SWI)   2        0 317327.18        12.68     12984.00
+Prolog (SWI)   3        0 336952.45        12.66     12964.00
+Prolog (SWI)   4        0 314983.90        12.67     12972.00
+Prolog (SWI)   5        0 338078.59        12.68     12984.00
+
+
+Summary:
+
+Name         Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB AvgPeakMemoryKB MaxPeakMemoryKB
+----         ---- --------- --------- --------- --------------- --------------- --------------- ---------------
+Go              5   1477.69   1425.01   1570.79           20.79           21.45        21285.60        21960.00
+Ruby            5  49636.43  49489.82  49720.23           52.45           52.49        53706.40        53748.00
+Prolog (SWI)    5 324405.99 314687.84 338078.59           12.67           12.68        12972.80        12984.00
 ```
 
 ## Limitations
