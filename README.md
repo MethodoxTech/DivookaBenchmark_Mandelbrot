@@ -51,3 +51,7 @@ C# Trimmed    5   2027.68   2002.98   2113.89            0.00            0.00
 C++           5   2101.41   2005.51   2466.36            0.00            0.00
 Python        5  50614.63  48008.35  53020.98            0.00            0.00
 ```
+
+## Limitations
+
+* There are a few loops but no recursion or deep function calls.
