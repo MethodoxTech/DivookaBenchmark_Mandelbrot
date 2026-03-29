@@ -29,6 +29,7 @@ $results = foreach ($test in $tests) {
             ExitCode     = $p.ExitCode
             TimeMs       = $sw.Elapsed.TotalMilliseconds
             PeakMemoryMB = [math]::Round($p.PeakWorkingSet64 / 1MB, 2)
+            PeakMemoryKB = [math]::Round($p.PeakWorkingSet64 / 1KB, 2)
         }
     }
 }
@@ -49,6 +50,8 @@ $results |
             MaxTimeMs       = [math]::Round(($rows | Measure-Object TimeMs -Maximum).Maximum, 2)
             AvgPeakMemoryMB = [math]::Round(($rows | Measure-Object PeakMemoryMB -Average).Average, 2)
             MaxPeakMemoryMB = [math]::Round(($rows | Measure-Object PeakMemoryMB -Maximum).Maximum, 2)
+            AvgPeakMemoryKB = [math]::Round(($rows | Measure-Object PeakMemoryKB -Average).Average, 2)
+            MaxPeakMemoryKB = [math]::Round(($rows | Measure-Object PeakMemoryKB -Maximum).Maximum, 2)
         }
     } |
     Sort-Object AvgTimeMs |
