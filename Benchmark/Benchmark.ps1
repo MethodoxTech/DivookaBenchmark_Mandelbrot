@@ -1,42 +1,59 @@
 $runs = 5
 
 $tests = @(
-    @{ Name = "C++"; FilePath = "../Artifacts/Win64/MangelbrotCPP.exe"; Arguments = "" }
-    @{ Name = "C# Trimmed"; FilePath = "../Artifacts/Win64/MandelbrotCSharp.exe"; Arguments = "" }
-    @{ Name = "C# AoT"; FilePath = "../Artifacts/Win64/MandelbrotCSharpAoT.exe"; Arguments = "" }
-    @{ Name = "Python"; FilePath = "python"; Arguments = "../Scripts/Python/mandelbrotpython.py" }
+    @{ Name = "C++";        FilePath = "../Artifacts/Win64/MandelbrotCPP.exe";        Arguments = @() }
+    @{ Name = "C# Trimmed"; FilePath = "../Artifacts/Win64/MandelbrotCSharp.exe";     Arguments = @() }
+    @{ Name = "C# AoT";     FilePath = "../Artifacts/Win64/MandelbrotCSharpAoT.exe";  Arguments = @() }
+    @{ Name = "Python";     FilePath = "python";                                      Arguments = @("../Scripts/Python/mandelbrotpython.py") }
 )
 
 $results = foreach ($test in $tests) {
-    Write-Host $test
+    Write-Host "Running $($test.Name)"
+
     foreach ($i in 1..$runs) {
-        Write-Host $i
+        Write-Host "  Run $i"
 
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
-        $p = Start-Process -FilePath $test.FilePath `
-                           -ArgumentList $test.Arguments `
-                           -PassThru `
-                           -NoNewWindow `
-                           -Wait
+        $p = Start-Process `
+            -FilePath $test.FilePath `
+            -ArgumentList $test.Arguments `
+            -PassThru `
+            -NoNewWindow
 
+        $peakWorkingSet = 0
+
+        while (-not $p.HasExited) {
+            try {
+                $p.Refresh()
+                if ($p.WorkingSet64 -gt $peakWorkingSet) {
+                    $peakWorkingSet = $p.WorkingSet64
+                }
+            }
+            catch {
+                break
+            }
+
+            Start-Sleep -Milliseconds 10
+        }
+
+        $p.WaitForExit()
         $sw.Stop()
-        $p.Refresh()
 
         [pscustomobject]@{
             Name         = $test.Name
             Run          = $i
             ExitCode     = $p.ExitCode
-            TimeMs       = $sw.Elapsed.TotalMilliseconds
-            PeakMemoryMB = [math]::Round($p.PeakWorkingSet64 / 1MB, 2)
-            PeakMemoryKB = [math]::Round($p.PeakWorkingSet64 / 1KB, 2)
+            TimeMs       = [math]::Round($sw.Elapsed.TotalMilliseconds, 2)
+            PeakMemoryMB = [math]::Round($peakWorkingSet / 1MB, 2)
+            PeakMemoryKB = [math]::Round($peakWorkingSet / 1KB, 2)
         }
     }
 }
 
 $results | Format-Table -AutoSize
 
-Write-Host "Summary:"
+Write-Host "`nSummary:"
 
 $results |
     Group-Object Name |
