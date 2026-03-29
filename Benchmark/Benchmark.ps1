@@ -1,3 +1,13 @@
+[pscustomobject]@{
+    CPU        = (Get-CimInstance Win32_Processor).Name
+    Cores      = (Get-CimInstance Win32_Processor).NumberOfCores
+    Threads    = (Get-CimInstance Win32_Processor).NumberOfLogicalProcessors
+    RAM_GB     = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
+    GPU        = (Get-CimInstance Win32_VideoController).Name -join "; "
+    OS         = (Get-CimInstance Win32_OperatingSystem).Caption
+    OSVersion  = (Get-CimInstance Win32_OperatingSystem).Version
+} | Format-List
+
 $runs = 5
 
 $tests = @(
