@@ -4,15 +4,44 @@ A benchmark for Divooka.
 
 ## Experiment Set
 
-default 2000 x 2000, maxIter = 1000, runs = 5
+**Setup**
 
-|Platform|Peak Memory (Mb)|Run Time (s)|
-|-|-|-|
-|C++|||
-|C# (.Net 10)|||
-|C# AoT|||
-|Python (3.13.5)|||
-|Divooka|||
+Mandelbrot:
+
+* Default 2000 x 2000, MaxIter = 1000, Runs = 5 (Correct output: 689833081)
+* Exercises integer math, floating point, loops, branches, function calls, and memory writes
+* Compare the printed checksum matches across all implementations
+
+**Best Results**
+
+* Size refer to default distribution, which can typically be further optimized (e.g. embedded python, Divooka™ Compute)
+
+|Rank (by Time)|Platform|Size|Run Time (Ms)|Peak Memory|
+|-|-|-|-|-|
+|1|JavaScript (Web/Chrome)|3 Kb|1298.70 (No startup time)|≈9.54 MB|
+|2|C++|15 Kb|1308|18.62 Mb|
+|3|Go|2 Kb + 224 Mb|||
+|4|C# AoT|911 Kb|1355.35|17.98 Mb|
+|5|C# (.Net 10)|16.5 Mb|1357.47|26.88 Mb|
+|6|JavaScript (Node)|2 Kb + 98.2 Mb|1406.20|49.47 Mb|
+|7|JavaScript (Web/Firefox)|3 Kb|1513.00|N/A|
+|8|Java (OpenJDK) (17.0.11)|2 Kb + 2 Kb + 301 Mb|1587.79|55.2 Mb|
+|9|Ruby (3.2.2)|1 Kb + 907 Mb|||
+|10|Python (3.13.5)|2 Kb + 139 Mb|47127.7|61.4 Mb|
+|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 Mb|||
+|12|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|||
+|N/A|Haskell||||
+|N/A|Perl||||
+|N/A|Elixir||||
+|N/A|Divooka (0.75.2)||||
+
+**Observations**
+
+* Damn JavaScript is fast.
+* Python is surprisingly slow.
+* GNU Octave is surprisingly slow.
+* JavaScript is surprisingly fast.
+* I know Octave is probably optimized for matrix operations - but raw iteration speed is 💩.
 
 ## Records
 
@@ -101,6 +130,36 @@ C# AoT        5   1367.77   1355.35   1386.98           17.95           18.74   
 Python        5  50681.05  47127.70  57932.10           61.40           61.42        62880.00        62896.00
 ```
 
+## 20260329
+
+```
+Name       Run ExitCode  TimeMs PeakMemoryMB PeakMemoryKB
+----       --- --------  ------ ------------ ------------
+Java         1        0 2172.38        54.81     56124.00
+Java         2        0 1587.79        55.12     56444.00
+Java         3        0 2170.23        54.94     56260.00
+Java         4        0 2180.13        55.20     56520.00
+Java         5        0 2161.38        54.95     56268.00
+JS (Node)    1        0 1414.63        48.76     49932.00
+JS (Node)    2        0 1408.87        50.67     51884.00
+JS (Node)    3        0 1416.41        48.07     49224.00
+JS (Node)    4        0 1421.06        49.81     51008.00
+JS (Node)    5        0 1406.20        50.05     51248.00
+
+
+Summary:
+
+Name       Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB AvgPeakMemoryKB MaxPeakMemoryKB
+----       ---- --------- --------- --------- --------------- --------------- --------------- ---------------
+JS (Node)     5   1413.43   1406.20   1421.06           49.47           50.67        50659.20        51884.00
+Java          5   2054.38   1587.79   2180.13           55.00           55.20        56323.20        56520.00
+```
+
 ## Limitations
 
-* There are a few loops but no recursion or deep function calls.
+The benchmark only tests simple loops and large integers:
+
+* Other programs do not have special warm-up handling so JavaScript (web) has an advantage.
+* There are a few loops but no recursion or deep function calls - Divooka may suffer when call hierarchy is deep.
+* This tests raw native run time speed, but different programming systems have different uses - e.g. people rarely use Python as is.
+* Certain languages are more suited for certain things. GNU Octave is supposedly very good at matrix.
