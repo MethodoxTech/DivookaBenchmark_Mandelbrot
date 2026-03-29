@@ -1,0 +1,9 @@
+x64
+bin
+.vs
+obj
+*.csproj.user
+*.pubxml
+*.pubxml.user
+*.vcxproj.user
+*.vcxproj.filters
