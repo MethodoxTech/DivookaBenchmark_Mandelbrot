@@ -31,11 +31,12 @@ Mandelbrot:
 |9|Python (3.13.5)|2 Kb + 139 Mb|47127|61.4 Mb|
 |10|Ruby (3.2.2)|1 Kb + 907 Mb|49489|52.45 Mb|
 |11|Prolog (SWI) (With optimization)|2 Kb + 42.8 Mb|314687|12.67 Mb|
-|N/A|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|(Too slow to test...)||
+|12|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|2464913 (41 min)|5.46Mb|
 |N/A|Haskell||||
 |N/A|Julia||||
 |N/A|Perl||||
 |N/A|Elixir||||
+|N/A|Pure 2||||
 |N/A|Divooka (0.75.2)||||
 
 **Observations**
@@ -46,6 +47,8 @@ Mandelbrot:
 * JavaScript is surprisingly fast.
 * I know Octave is probably optimized for matrix operations - but raw iteration speed is 💩.
 * Ruby.. oh my Ruby...
+* GNU Octave seems very naive interpretation (but ues very little memory)?
+* Modern scripting languages are not usable without JIT.
 
 ## Records
 
@@ -186,6 +189,25 @@ Name         Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB 
 Go              5   1477.69   1425.01   1570.79           20.79           21.45        21285.60        21960.00
 Ruby            5  49636.43  49489.82  49720.23           52.45           52.49        53706.40        53748.00
 Prolog (SWI)    5 324405.99 314687.84 338078.59           12.67           12.68        12972.80        12984.00
+```
+
+## 20260330
+
+```
+Name       Run ExitCode     TimeMs PeakMemoryMB PeakMemoryKB
+----       --- --------     ------ ------------ ------------
+GNU Octave   1        0 2485694.66         5.50      5628.00
+GNU Octave   2        0 2464913.29         5.45      5580.00
+GNU Octave   3        0 2483131.48         5.45      5580.00
+GNU Octave   4        0 2468400.16         5.44      5572.00
+GNU Octave   5        0 2474652.51         5.45      5584.00
+
+
+Summary:
+
+Name       Runs  AvgTimeMs  MinTimeMs  MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB AvgPeakMemoryKB MaxPeakMemoryKB
+----       ----  ---------  ---------  --------- --------------- --------------- --------------- ---------------
+GNU Octave    5 2475358.42 2464913.29 2485694.66            5.46            5.50         5588.80         5628.00
 ```
 
 ## Limitations
