@@ -4,6 +4,8 @@ A benchmark for Divooka.
 
 ## Experiment Set
 
+> Conclusion: A JIT (just-in-time compiler) is essential to any modern high performance scripting language.
+
 **Setup**
 
 Mandelbrot:
@@ -21,23 +23,25 @@ Mandelbrot:
 |1|JavaScript (Web/MS Edge)|3 Kb|1295.80 (No startup time)|≈9.54 MB|
 |1|JavaScript (Web/Chrome)|3 Kb|1298.70 (No startup time)|≈9.54 MB|
 |1|JavaScript (Web/Brave)|3 Kb|1302.80 (No startup time)|≈9.54 MB|
-|2|C++|15 Kb|1308|18.62 Mb|
-|3|C# AoT|911 Kb|1355.35|17.98 Mb|
-|4|C# (.Net 10)|16.5 Mb|1357.47|26.88 Mb|
-|5|JavaScript (Node)|2 Kb + 98.2 Mb|1406.20|49.47 Mb|
-|6|Go|2 Kb + 224 Mb|1425|20.79 Mb|
+|2|C++|15 Kb|1308|18.62 MB|
+|3|C# AoT|911 Kb|1355.35|17.98 MB|
+|4|C# (.Net 10)|16.5 MB|1357.47|26.88 MB|
+|5|JavaScript (Node)|2 Kb + 98.2 MB|1406.20|49.47 MB|
+|6|Go|2 Kb + 224 MB|1425|20.79 MB|
 |7|JavaScript (Web/Firefox)|3 Kb|1513.00|N/A|
-|8|Java (OpenJDK) (17.0.11)|2 Kb + 2 Kb + 301 Mb|1587.79|55.2 Mb|
-|9|Python (3.13.5)|2 Kb + 139 Mb|47127|61.4 Mb|
-|10|Ruby (3.2.2)|1 Kb + 907 Mb|49489|52.45 Mb|
-|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 Mb|314687|12.67 Mb|
-|12|GNU Octave (7.3.0)|2 Kb + 2.07 Gb|2464913 (41 min)|5.46Mb|
+|8|Java (OpenJDK) (17.0.11)|2 Kb + 2 Kb + 301 MB|1587.79|55.2 MB|
+|9|Python (3.13.5)|2 Kb + 139 MB|47127|61.4 MB|
+|10|Ruby (3.2.2)|1 Kb + 907 MB|49489|52.45 MB|
+|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 MB|314687|12.67 MB|
+|12|GNU Octave (7.3.0)|2 Kb + 2.07 GB|2464913 (41 min)|5.46Mb|
+|13|Divooka (0.75.2; Editor)|2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
 |N/A|Haskell||||
 |N/A|Julia||||
 |N/A|Perl||||
 |N/A|Elixir||||
 |N/A|Pure 2||||
-|N/A|Divooka (0.75.2)||||
+|N/A|Divooka (0.75.2; Stewer)||||
+|N/A|Divooka (GP; Stewer)||||
 
 **Observations**
 
@@ -209,6 +213,11 @@ Name       Runs  AvgTimeMs  MinTimeMs  MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB
 ----       ----  ---------  ---------  --------- --------------- --------------- --------------- ---------------
 GNU Octave    5 2475358.42 2464913.29 2485694.66            5.46            5.50         5588.80         5628.00
 ```
+
+## 20260424
+
+Divooka (Editor): 1252.223s for 2504172 iterations (Index: 840000); DRAM: 851MB. 
+Estimated: (689833081 Iterations) 500.05µ/iter. 95.8Hr.
 
 ## Limitations
 
