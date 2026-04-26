@@ -16,13 +16,11 @@ Mandelbrot:
 
 **Best Results**
 
-* Size refer to default distribution, which can typically be further optimized (e.g. embedded python, Divooka™ Compute)
-
 |Rank (by Time)|Platform|Size|Run Time (Ms)|Peak Memory|
 |-|-|-|-|-|
-|1|JavaScript (Web/MS Edge)|3 Kb|1295.80 (No startup time)|≈9.54 MB|
-|1|JavaScript (Web/Chrome)|3 Kb|1298.70 (No startup time)|≈9.54 MB|
-|1|JavaScript (Web/Brave)|3 Kb|1302.80 (No startup time)|≈9.54 MB|
+|1 (Tie)|JavaScript (Web/MS Edge)|3 Kb|1295.80 (No startup time)|≈9.54 MB|
+|1 (Tie)|JavaScript (Web/Chrome)|3 Kb|1298.70 (No startup time)|≈9.54 MB|
+|1 (Tie)|JavaScript (Web/Brave)|3 Kb|1302.80 (No startup time)|≈9.54 MB|
 |2|C++|15 Kb|1308|18.62 MB|
 |3|C# AoT|911 Kb|1355.35|17.98 MB|
 |4|C# (.Net 10)|16.5 MB|1357.47|26.88 MB|
@@ -32,9 +30,13 @@ Mandelbrot:
 |8|Java (OpenJDK) (17.0.11)|2 Kb + 2 Kb + 301 MB|1587.79|55.2 MB|
 |9|Python (3.13.5)|2 Kb + 139 MB|47127|61.4 MB|
 |10|Ruby (3.2.2)|1 Kb + 907 MB|49489|52.45 MB|
-|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 MB|314687|12.67 MB|
-|12|GNU Octave (7.3.0)|2 Kb + 2.07 GB|2464913 (41 min)|5.46Mb|
-|13|Divooka (0.75.2; Editor)|2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
+|11|Prolog (SWI) (With optimization)|2 Kb + 42.8 MB|314,687|12.67 MB|
+|12|Kimi (2.6 Instant)|N/A|340,330|N/A|
+|13|GNU Octave (7.3.0)|2 Kb + 2.07 GB|2,464,913 (41 min)|5.46Mb|
+|14|Divooka (0.75.2; Editor)|2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
+|15|ChatGPT (5.3 Instant)|N/A|26.32|N/A|
+|15 (Tie)|Grok (Fast)|N/A|Failed|N/A|
+|15 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
 |N/A|Haskell||||
 |N/A|Julia||||
 |N/A|Perl||||
@@ -42,6 +44,11 @@ Mandelbrot:
 |N/A|Pure 2||||
 |N/A|Divooka (0.75.2; Stewer)||||
 |N/A|Divooka (GP; Stewer)||||
+
+Notes:
+
+* Size refer to default distribution, which can typically be further optimized (e.g. embedded python, Divooka™ Compute)
+* GenAI results are provided as it's of general interest in this AI age.
 
 **Observations**
 
@@ -218,6 +225,33 @@ GNU Octave    5 2475358.42 2464913.29 2485694.66            5.46            5.50
 
 Divooka (Editor): 1252.223s for 2504172 iterations (Index: 840000); DRAM: 851MB. 
 Estimated: (689833081 Iterations) 500.05µ/iter. 95.8Hr.
+
+## 20260426
+
+ChatGPT:
+
+1. Run 1: 26.32s
+2. Run 2: >3 mins (never replied, stuck on "working")
+
+ChatGPT doesn't produce reliable outputs.
+
+Gemini:
+
+1. Run 1: "Something went wrong"
+2. Run 2: 7.94s (Failed; Wrong output)
+
+Grok:
+
+1. Run 1: "No response. Grok was unable to finish replying."
+2. Run 2: "No response. Grok was unable to finish replying."
+
+Kimi:
+
+1. Run 1: 340.33s (5 min 40.33s) (Through automatic tool use by executing Python Code; Tried twice automatically; First time encountered syntax error in its own generated code. Tried multiple times with variations.)
+
+Notice through prompt engineering it's possible to fine tune AI's behavior (e.g. as it to use or not use tools), but we are relying on default behaviors for benchmark.
+
+Because GenAI results are lengthy, not replicable, and contains lost of garbage, we chose not to include the transcripts and just record the final result. Some interesting results are available in `Scripts/GenAI/Prompt.md` - especially *Kimi's approach is interesting*. 
 
 ## Limitations
 
