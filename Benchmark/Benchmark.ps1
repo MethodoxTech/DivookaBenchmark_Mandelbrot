@@ -21,6 +21,7 @@ $tests = @(
     @{ Name = "Python";       FilePath = "python";                                       Arguments = @("../Scripts/Python/mandelbrotpython.py") }
     @{ Name = "Prolog (SWI)"; FilePath = "swipl";                                        Arguments = @("-q", "-f", "../Scripts/Prolog/madelbrot.pl") }
     @{ Name = "GNU Octave";   FilePath = "octave.exe";                                   Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
+    @{ Name = "Julia";        FilePath = "julia";                                        Arguments = @("../Scripts/Julia/mandelbrot.jl", "2000", "2000", "1000") }
 )
 
 $results = foreach ($test in $tests) {
