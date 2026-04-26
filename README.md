@@ -1,3 +1,5 @@
+![Banner](./Banner.png)
+
 # DivookaBenchmark_Mandelbrot
 
 A benchmark for Divooka.
