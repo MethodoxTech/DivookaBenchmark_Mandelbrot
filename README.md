@@ -28,18 +28,18 @@ Mandelbrot:
 |4|C# (.Net 10)|16.5 MB|1,357.47|26.88 MB|
 |5|JavaScript (Node)|2 KB + 98.2 MB|1,406.20|49.47 MB|
 |6|Go|2 KB + 224 MB|1,425.01|20.79 MB|
-|7|Julia|1 GB|1,511.20|227.08 MB|
+|7|Julia|2 KB + 1 GB|1,511.20|227.08 MB|
 |8|JavaScript (Web/Firefox)|3 KB|1,513.00|N/A|
 |9|Java (OpenJDK) (17.0.11)|2 KB + 2 KB + 301 MB|1,587.79|55.2 MB|
 |10|Divooka (0.75.2; Compiled)|71.914 MB|3,639.24|47.46 MB|
-|11|Divooka (0.75.2; Aviator Run)|2.16 GB (Distribution) + 776 MB (SDK)|6,710.84|145.61 MB|
+|11|Divooka (0.75.2; Aviator Run)|8 KB + 2.16 GB (Distribution) + 776 MB (SDK)|6,710.84|145.61 MB|
 |12|ChatGPT (5.3 Instant)|N/A|26,320.00|N/A|
 |13|Python (3.13.5)|2 KB + 139 MB|47,127.70|61.4 MB|
 |14|Ruby (3.2.2)|1 KB + 907 MB|49,489.82|52.45 MB|
 |15|Prolog (SWI) (With optimization)|2 KB + 42.8 MB|314,687.84|12.67 MB|
 |16|Kimi (2.6 Instant)|N/A|340,330.00|N/A|
 |17|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46Mb|
-|18|Divooka (0.75.2; Neo Editor)|2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
+|18|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
 |19 (Tie)|Grok (Fast)|N/A|Failed|N/A|
 |19 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
 |N/A|Haskell||||
