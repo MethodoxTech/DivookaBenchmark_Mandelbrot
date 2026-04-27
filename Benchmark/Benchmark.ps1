@@ -11,17 +11,19 @@
 $runs = 5
 
 $tests = @(
-    @{ Name = "JS (Node)";    FilePath = "node";                                         Arguments = @("../Scripts/JavaScript_Node/mandelbrot.js") }
-    @{ Name = "C++";          FilePath = "../Artifacts/Win64/MandelbrotCPP.exe";         Arguments = @() }
-    @{ Name = "Go";           FilePath = "go";                                           Arguments = @("run", "../Scripts/Go/mandelbrot.go") }
-    @{ Name = "C# AoT";       FilePath = "../Artifacts/Win64/MandelbrotCSharpAoT.exe";   Arguments = @() }
-    @{ Name = "C# Trimmed";   FilePath = "../Artifacts/Win64/MandelbrotCSharp.exe";      Arguments = @() }
-    @{ Name = "Java";         FilePath = "java";                                         Arguments = @("-cp", "../Scripts/Java", "Mandelbrot") }
-    @{ Name = "Ruby";         FilePath = "ruby";                                         Arguments = @("../Scripts/Ruby/mandelbrot.ruby") }
-    @{ Name = "Python";       FilePath = "python";                                       Arguments = @("../Scripts/Python/mandelbrotpython.py") }
-    @{ Name = "Prolog (SWI)"; FilePath = "swipl";                                        Arguments = @("-q", "-f", "../Scripts/Prolog/madelbrot.pl") }
-    @{ Name = "GNU Octave";   FilePath = "octave.exe";                                   Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
-    @{ Name = "Julia";        FilePath = "julia";                                        Arguments = @("../Scripts/Julia/mandelbrot.jl", "2000", "2000", "1000") }
+    @{ Name = "JS (Node)";          FilePath = "node";                                         Arguments = @("../Scripts/JavaScript_Node/mandelbrot.js") }
+    @{ Name = "C++";                FilePath = "../Artifacts/Win64/MandelbrotCPP.exe";         Arguments = @() }
+    @{ Name = "Go";                 FilePath = "go";                                           Arguments = @("run", "../Scripts/Go/mandelbrot.go") }
+    @{ Name = "C# AoT";             FilePath = "../Artifacts/Win64/MandelbrotCSharpAoT.exe";   Arguments = @() }
+    @{ Name = "C# Trimmed";         FilePath = "../Artifacts/Win64/MandelbrotCSharp.exe";      Arguments = @() }
+    @{ Name = "Java";               FilePath = "java";                                         Arguments = @("-cp", "../Scripts/Java", "Mandelbrot") }
+    @{ Name = "Ruby";               FilePath = "ruby";                                         Arguments = @("../Scripts/Ruby/mandelbrot.ruby") }
+    @{ Name = "Python";             FilePath = "python";                                       Arguments = @("../Scripts/Python/mandelbrotpython.py") }
+    @{ Name = "Prolog (SWI)";       FilePath = "swipl";                                        Arguments = @("-q", "-f", "../Scripts/Prolog/madelbrot.pl") }
+    @{ Name = "GNU Octave";         FilePath = "octave.exe";                                   Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
+    @{ Name = "Julia";              FilePath = "julia";                                        Arguments = @("../Scripts/Julia/mandelbrot.jl", "2000", "2000", "1000") }
+    @{ Name = "Divooka (Aviator)";    FilePath = "Aviator";                                      Arguments = @("run", "../Scripts/Divooka/mandelbrot.dvk") }
+    @{ Name = "Divooka (Compiled)";   FilePath = "../Artifacts/Win64/MandelbrotDvk.exe";         Arguments = @() }
 )
 
 $results = foreach ($test in $tests) {
