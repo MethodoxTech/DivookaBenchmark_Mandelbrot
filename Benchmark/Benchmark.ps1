@@ -22,8 +22,9 @@ $tests = @(
     @{ Name = "Prolog (SWI)";       FilePath = "swipl";                                        Arguments = @("-q", "-f", "../Scripts/Prolog/madelbrot.pl") }
     @{ Name = "GNU Octave";         FilePath = "octave.exe";                                   Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
     @{ Name = "Julia";              FilePath = "julia";                                        Arguments = @("../Scripts/Julia/mandelbrot.jl", "2000", "2000", "1000") }
-    @{ Name = "Divooka (Aviator)";    FilePath = "Aviator";                                      Arguments = @("run", "../Scripts/Divooka/mandelbrot.dvk") }
-    @{ Name = "Divooka (Compiled)";   FilePath = "../Artifacts/Win64/MandelbrotDvk.exe";         Arguments = @() }
+    @{ Name = "Divooka (Aviator)";  FilePath = "Aviator";                                      Arguments = @("run", "../Scripts/Divooka/mandelbrot.dvk") }
+    @{ Name = "Divooka (Compiled)"; FilePath = "../Artifacts/Win64/MandelbrotDvk.exe";         Arguments = @() }
+    @{ Name = "Divooka (Stewer)";   FilePath = "stew";                                         Arguments = @("../Scripts/Divooka/mandelbrot.dvk") }
 )
 
 $results = foreach ($test in $tests) {
