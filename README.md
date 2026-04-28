@@ -33,21 +33,21 @@ Mandelbrot:
 |9|Java (OpenJDK) (17.0.11)|2 KB + 2 KB + 301 MB|1,587.79|55.2 MB|
 |10|Divooka (0.75.2; Compiled)|71.914 MB|3,639.24|47.46 MB|
 |11|Divooka (0.75.2; Aviator Run)|8 KB + 2.16 GB (Distribution) + 776 MB (SDK)|6,710.84|145.61 MB|
-|12|ChatGPT (5.3 Instant)|N/A|26,320.00|N/A|
-|13|Python (3.13.5)|2 KB + 139 MB|47,127.70|61.4 MB|
-|14|Ruby (3.2.2)|1 KB + 907 MB|49,489.82|52.45 MB|
-|15|Prolog (SWI) (With optimization)|2 KB + 42.8 MB|314,687.84|12.67 MB|
-|16|Kimi (2.6 Instant)|N/A|340,330.00|N/A|
-|17|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46Mb|
-|18|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
-|19 (Tie)|Grok (Fast)|N/A|Failed|N/A|
-|19 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
+|12|Divooka (0.75.2; Stewer)|8 KB + 2.16 GB|7,064.98|292.98 MB|
+|13|ChatGPT (5.3 Instant)|N/A|26,320.00|N/A|
+|14|Python (3.13.5)|2 KB + 139 MB|47,127.70|61.4 MB|
+|15|Ruby (3.2.2)|1 KB + 907 MB|49,489.82|52.45 MB|
+|16|Prolog (SWI) (With optimization)|2 KB + 42.8 MB|314,687.84|12.67 MB|
+|17|Kimi (2.6 Instant)|N/A|340,330.00|N/A|
+|18|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46Mb|
+|19|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
+|20 (Tie)|Grok (Fast)|N/A|Failed|N/A|
+|20 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
 |N/A|Haskell||||
 |N/A|Julia||||
 |N/A|Perl||||
 |N/A|Elixir||||
 |N/A|Pure 2||||
-|N/A|Divooka (0.75.2; Stewer)||||
 |N/A|Divooka (GP; Stewer)||||
 
 Notes:
@@ -82,12 +82,13 @@ Observations:
 | 8    | JavaScript (Web: Firefox)               |                 3 KB |               1,513.00 |         N/A |
 | 9    | Java (OpenJDK 17.0.11)                  | 301 MB + small files |               1,587.79 |     55.2 MB |
 | 10   | Divooka 0.75.2 (Compiled)               |            71.914 MB |               3,639.24 |    47.46 MB |
-| 11   | Divooka 0.75.2 (Aviator Run)            |     2.16 GB + 776 MB |               6,710.84 |   145.61 MB |
-| 12   | Python 3.13.5                           |        2 KB + 139 MB |              47,127.70 |     61.4 MB |
-| 13   | Ruby 3.2.2                              |        1 KB + 907 MB |              49,489.82 |    52.45 MB |
-| 14   | Prolog (SWI, optimized)                 |       2 KB + 42.8 MB |             314,687.84 |    12.67 MB |
-| 15   | GNU Octave 7.3.0                        |       2 KB + 2.07 GB | 2,464,913.29 (~41 min) |     5.46 MB |
-| 16   | Divooka 0.75.2 (Neo Editor, est.)       |              2.67 GB | 344,880,000 (~95.8 hr) |      851 MB |
+| 11   | Divooka 0.75.2 (Aviator Run)            | 8KB + 2.16GB + 776MB |               6,710.84 |   145.61 MB |
+| 12   | Divooka 0.75.2 (Stewer)                 |       8 KB + 2.16 GB |               7,064.98 |   292.98 MB |
+| 13   | Python 3.13.5                           |        2 KB + 139 MB |              47,127.70 |     61.4 MB |
+| 14   | Ruby 3.2.2                              |        1 KB + 907 MB |              49,489.82 |    52.45 MB |
+| 15   | Prolog (SWI, optimized)                 |       2 KB + 42.8 MB |             314,687.84 |    12.67 MB |
+| 16   | GNU Octave 7.3.0                        |       2 KB + 2.07 GB | 2,464,913.29 (~41 min) |     5.46 MB |
+| 17   | Divooka 0.75.2 (Neo Editor, est.)       |       8 KB + 2.67 GB | 344,880,000 (~95.8 hr) |      851 MB |
 
 Notes:
 
@@ -327,6 +328,25 @@ Name               Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMem
 ----               ---- --------- --------- --------- --------------- --------------- --------------- ---------------
 Divooka (Compiled)    5   3660.10   3639.24   3683.26           47.46           49.19        48603.20        50372.00
 Divooka (Aviator)     5   9218.47   6710.84  19066.15          145.61          153.90       149104.00       157596.00
+```
+
+## 20260428
+
+```
+
+Name             Run ExitCode   TimeMs PeakMemoryMB PeakMemoryKB
+----             --- --------   ------ ------------ ------------
+Divooka (Stewer)   1        0 20472.50       300.78    307996.00
+Divooka (Stewer)   2        0  7071.69       288.17    295084.00
+Divooka (Stewer)   3        0  7115.90       290.74    297716.00
+Divooka (Stewer)   4        0  7164.90       295.25    302336.00
+Divooka (Stewer)   5        0  7064.98       289.95    296904.00
+
+Summary:
+
+Name             Runs AvgTimeMs MinTimeMs MaxTimeMs AvgPeakMemoryMB MaxPeakMemoryMB AvgPeakMemoryKB MaxPeakMemoryKB
+----             ---- --------- --------- --------- --------------- --------------- --------------- ---------------
+Divooka (Stewer)    5   9777.99   7064.98  20472.50          292.98          300.78       300007.20       307996.00
 ```
 
 ## Limitations
