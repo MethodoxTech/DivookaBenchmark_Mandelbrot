@@ -21,6 +21,8 @@ $tests = @(
     @{ Name = "Python";             FilePath = "python";                                       Arguments = @("../Scripts/Python/mandelbrotpython.py") }
     @{ Name = "Prolog (SWI)";       FilePath = "swipl";                                        Arguments = @("-q", "-f", "../Scripts/Prolog/madelbrot.pl") }
     @{ Name = "GNU Octave";         FilePath = "octave.exe";                                   Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
+    # Divooka Matrix Operator runs the GNU Octave script unchanged; set DMO_EXE to its executable (preview, not public yet).
+    @{ Name = "Divooka Matrix Operator"; FilePath = $env:DMO_EXE;                          Arguments = @("../Scripts/GNUOctave/mandelbrot.m") }
     @{ Name = "Julia";              FilePath = "julia";                                        Arguments = @("../Scripts/Julia/mandelbrot.jl", "2000", "2000", "1000") }
     @{ Name = "Divooka (Aviator)";  FilePath = "Aviator";                                      Arguments = @("run", "../Scripts/Divooka/mandelbrot.dvk") }
     @{ Name = "Divooka (Compiled)"; FilePath = "../Artifacts/Win64/MandelbrotDvk.exe";         Arguments = @() }
