@@ -364,6 +364,20 @@ Divooka Matrix Operator       3  15327.90 14690.10 14594.94 689833081
 
 On the same machine, a 200 x 200 version of the script takes 27.7 s in GNU Octave 11.1 and 0.14 s in Divooka Matrix Operator, so the full 2000 x 2000 run would take GNU Octave roughly 45-50 minutes there, in line with the 41 minutes recorded above. Divooka Matrix Operator is about 6 times slower than C# AoT on this loop-heavy script, and about 200 times faster than GNU Octave.
 
+## 20261019 (Divooka Matrix Operator JIT build, preview)
+
+Same machine and script as the previous record (Linux x64 cloud VM, 2 vCPUs, shared; `Scripts/GNUOctave/mandelbrot.m` run unchanged). Divooka Matrix Operator now also ships a JIT build next to its ahead-of-time compiled default; both are self-contained (no runtime to install).
+
+```
+Name                              Runs  TimeMs (each)            Checksum
+----                              ----  -------------            --------
+C# AoT (Scripts/C#AoT)               2  2361.25  2473.54         689833081
+Divooka Matrix Operator (JIT)        3  2602.32  2656.41  2604.21 689833081
+Divooka Matrix Operator (default)    -  about 13,600-15,300 (previous record)
+```
+
+The JIT build runs this loop-heavy script within about 10% of C# AoT. It starts slower (about 60 ms instead of 10 ms) and is larger to download, so the ahead-of-time compiled build stays the default for general use.
+
 ## Limitations
 
 The benchmark only tests simple loops and large integers:
