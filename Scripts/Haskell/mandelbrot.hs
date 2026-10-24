@@ -1,3 +1,5 @@
+-- Prelude has its own foldl' since GHC 9.10 (base 4.20); this script's is the strict fold over the array below.
+import Prelude hiding (foldl')
 import System.Environment (getArgs)
 import Data.Array.Unboxed
 import Data.Word (Word64)
@@ -36,7 +38,7 @@ mandelbrot width height maxIter =
     in checksum
 
 -- strict fold
-foldl' :: (a -> b -> a) -> a -> UArray Int b -> a
+foldl' :: IArray UArray b => (a -> b -> a) -> a -> UArray Int b -> a
 foldl' f acc arr = go acc (indices arr)
   where
     go !z []     = z
