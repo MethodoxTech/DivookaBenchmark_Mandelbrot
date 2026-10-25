@@ -99,14 +99,14 @@ Measured as Mandelbrot's were, and **provisional** for the same reason. The prog
 |15|Ruby (4.0.9)|6 KB + 304 MB|28,546.87|27,152.62 - 30,082.89|25.62 MB|
 |16|Prolog (SWI 9.0.4)|12 KB + 47 MB|83,120.65|79,749.23 - 86,469.49|14.61 MB|
 |17|Perl (5.42.3)|7 KB + 1.1 GB|99,681.72|84,859.91 - 123,144.87|78.71 MB|
-|18|GNU Octave (7.3.0)|8 KB + 2.2 GB|(Est.) 2,734,400 (46 min)|from 7,837 at 80 x 60 and 39,914 at 160 x 120|35.80 MB|
-|19|Divooka (Stewer, interpreted)|29 KB + 1.75 GB|(Est.) 3,600,795 (60 min)|from 8,225 at 80 x 60 and 50,491 at 160 x 120|256.31 MB|
+|18|Divooka (Stewer, interpreted)|29 KB + 1.75 GB|2,641,014 (44 min), one run|estimated at 3,600,795 from 8,225 at 80 x 60 and 50,491 at 160 x 120|256.31 MB at 160 x 120|
+|19|GNU Octave (7.3.0)|8 KB + 2.2 GB|(Est.) 2,734,400 (46 min)|from 7,837 at 80 x 60 and 39,914 at 160 x 120|35.80 MB|
 |N/A|Divooka (GP; Stewer)|||Not runnable: see [Divooka (GP; Stewer)](#divooka-gp-stewer)||
 
 Notes:
 
 * About a second of work is not much next to a runtime's start-up, so on this benchmark Java's and Julia's include a large share of starting, and Julia compiles the program on every run.
-* The estimate's method was checked on Prolog, the one slow program also run at full size: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1.
+* The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
 * Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
 
 ### Earlier results
@@ -638,6 +638,8 @@ Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); pr
 |Julia|899.55|793.42 - 1,587.86|204.96|5|0||
 |Pure 2|1,900.23|1,777.44 - 2,537.88|200.79|5|0||
 |Divooka (stew, compiled)|4,293.93|4,111.23 - 7,034.08|364.79|5|0||
+
+Divooka (Stewer, interpreted), the ray tracer at full size, once, after the sessions above and while the Parcel NExT test suites ran on the same machine: 2,641,014 ms, `Checksum: 167196110`, and the reference's SHA-256.
 
 The reference's answers: Mandelbrot 689833081 at 2000 x 2000 (1703126 at 100 x 100 and 6823016 at 200 x 200, the work the estimates are drawn through); the ray tracer `Checksum: 167196110` and SHA-256 `c481fbea89bb8e6b7d2a97202005b1e3a65f3dfc5daf1abfff4c301debcf9c14` for scene.txt, 2617306 and `12aa506a...` at 80 x 60, 10420415 and `18bccd53...` at 160 x 120.
 
