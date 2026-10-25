@@ -3,7 +3,7 @@
 Builds every benchmark program that has to be compiled before it runs, into Artifacts/Build.
 
 .DESCRIPTION
-C++ (MSBuild, Release x64), C# (self-contained, single file, trimmed), C# AoT (NativeAOT), Go, Java and Haskell, for both benchmarks. The interpreted languages need nothing built, and neither does Divooka: its documents are run by the Divooka Compute distribution's stew.
+C++ (MSBuild, Release x64), C# (self-contained, single file, trimmed), C# AoT (NativeAOT), Go, Java and Haskell, for both benchmarks, and each Divooka document built into a program of its own when AviatorBeta is named. The interpreted languages need nothing built, and stew runs the Divooka documents as they are.
 
 Artifacts/Build is ignored by git; this script is how it is filled. Benchmark.ps1 runs what it builds.
 
@@ -13,9 +13,10 @@ Toolchains, each found the usual way:
 - Go: go on PATH. Built for GOAMD64=v1, the default, so the compiler never fuses a multiply and an add into one instruction - a fused one rounds once instead of twice, and the ray tracer's pictures would no longer be the same to the byte.
 - Java: the JDK at JAVA_HOME, else javac on PATH. Java 17 or later, whose floating point is strict by definition.
 - Haskell: ghc on PATH (GHCup installs one).
+- Divooka: the AviatorBeta.exe of a Divooka Compute folder, named by BENCH_AVIATOR, builds each Divooka document into a program of its own, as Divooka Compute's Publish does. Skipped when BENCH_AVIATOR is not set; stew runs the documents either way.
 
 .PARAMETER Only
-Build only these languages (C++, C#, C# AoT, Go, Java, Haskell).
+Build only these languages (C++, C#, C# AoT, Go, Java, Haskell, Divooka).
 
 .EXAMPLE
 pwsh Benchmark/Build.ps1
@@ -44,10 +45,10 @@ $javac = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin\javac.exe' } else {
 $benchmarks = @(
     @{ Name = 'Mandelbrot'; Scripts = Join-Path $root 'Scripts'
        Cpp = 'C++/MandelbrotCPP/MandelbrotCPP/MandelbrotCPP.vcxproj'; CSharp = 'C#/MandelbrotCSharp/MandelbrotCSharp/MandelbrotCSharp.csproj'; CSharpAoT = 'C#AoT/MandelbrotCSharpAoT/MandelbrotCSharpAoT/MandelbrotCSharpAoT.csproj'
-       Go = 'Go/mandelbrot.go'; Java = 'Java/Mandelbrot.java'; Haskell = 'Haskell/mandelbrot.hs' }
+       Go = 'Go/mandelbrot.go'; Java = 'Java/Mandelbrot.java'; Haskell = 'Haskell/mandelbrot.hs'; Divooka = 'Divooka/mandelbrot.dvk'; DivookaProgram = 'MandelbrotDvk' }
     @{ Name = 'RayTracer'; Scripts = Join-Path $root 'RayTracer/Scripts'
        Cpp = 'C++/RayTracerCPP/RayTracerCPP/RayTracerCPP.vcxproj'; CSharp = 'C#/RayTracerCSharp/RayTracerCSharp.csproj'; CSharpAoT = 'C#AoT/RayTracerCSharpAoT/RayTracerCSharpAoT.csproj'
-       Go = 'Go/raytracer.go'; Java = 'Java/RayTracer.java'; Haskell = 'Haskell/raytracer.hs' }
+       Go = 'Go/raytracer.go'; Java = 'Java/RayTracer.java'; Haskell = 'Haskell/raytracer.hs'; Divooka = 'Divooka/Ray Tracer.dvk'; DivookaProgram = 'RayTracerDvk' }
 )
 
 foreach ($benchmark in $benchmarks)
@@ -90,6 +91,12 @@ foreach ($benchmark in $benchmarks)
         $source = Join-Path $scripts $benchmark.Haskell
         New-Item -ItemType Directory -Force (Join-Path $out 'Haskell') | Out-Null
         Invoke-Checked "$($benchmark.Name) Haskell" { ghc -O2 -v0 -outputdir (Join-Path $obj 'Haskell') -o (Join-Path $out "Haskell/$([IO.Path]::GetFileNameWithoutExtension($source)).exe") $source }
+    }
+    # The Divooka document built into a program of its own by AviatorBeta, which Divooka Compute's Publish runs: only when BENCH_AVIATOR names the AviatorBeta.exe of a Divooka Compute folder.
+    if ((Wanted 'Divooka') -and $env:BENCH_AVIATOR)
+    {
+        $document = Join-Path $scripts $benchmark.Divooka
+        Invoke-Checked "$($benchmark.Name) Divooka" { & $env:BENCH_AVIATOR build $document (Join-Path $out 'Divooka') --name $benchmark.DivookaProgram }
     }
 }
 Write-Host "Built into $build"

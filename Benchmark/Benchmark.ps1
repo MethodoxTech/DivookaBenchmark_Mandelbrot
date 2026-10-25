@@ -166,6 +166,7 @@ $programs = if ($Benchmark -eq 'Mandelbrot')
         @{ Name = 'Julia';                       File = $tools.Julia;  Before = @("$scripts/Julia/mandelbrot.jl") }
         @{ Name = 'Pure 2';                      File = $tools.Pure;   Before = @("$scripts/Pure2/mandelbrot.cs") }
         @{ Name = 'Divooka (stew, compiled)';    File = $tools.Stew;   Before = @("$scripts/Divooka/mandelbrot.dvk") }
+        @{ Name = 'Divooka (AviatorBeta program)'; File = "$build/Divooka/MandelbrotDvk.exe" }
         @{ Name = 'Python';                      File = $tools.Python; Before = @("$scripts/Python/mandelbrotpython.py"); Slow = $true }
         @{ Name = 'Ruby';                        File = $tools.Ruby;   Before = @("$scripts/Ruby/mandelbrot.ruby"); Slow = $true }
         @{ Name = 'Perl';                        File = $tools.Perl;   Before = @("$scripts/Perl/mandelbrot.pl"); Slow = $true }
@@ -189,11 +190,12 @@ else
         @{ Name = 'Julia';                       File = $tools.Julia;  Before = @("$scripts/Julia/raytracer.jl") }
         @{ Name = 'Pure 2';                      File = $tools.Pure;   Before = @("$scripts/Pure2/raytracer.cs") }
         @{ Name = 'Divooka (stew, compiled)';    File = $tools.Stew;   Before = @("$scripts/Divooka/Ray Tracer.dvk") }
+        @{ Name = 'Divooka (AviatorBeta program)'; File = "$build/Divooka/RayTracerDvk.exe" }
         @{ Name = 'Python';                      File = $tools.Python; Before = @("$scripts/Python/raytracer.py"); Slow = $true }
         @{ Name = 'Ruby';                        File = $tools.Ruby;   Before = @("$scripts/Ruby/raytracer.rb"); Slow = $true }
         @{ Name = 'Perl';                        File = $tools.Perl;   Before = @("$scripts/Perl/raytracer.pl"); Slow = $true }
         @{ Name = 'Elixir';                      File = $tools.Erl;    Before = $elixirPaths + @('-noshell', '-s', 'elixir', 'start_cli', '-extra', "$scripts/Elixir/raytracer.exs"); Slow = $true; Needs = $elixirPaths.Count }
-        @{ Name = 'Prolog (SWI)';                File = $tools.Swipl;  Before = @('-q', "$scripts/Prolog/raytracer.pl"); Estimate = $true }
+        @{ Name = 'Prolog (SWI)';                File = $tools.Swipl;  Before = @('-q', "$scripts/Prolog/raytracer.pl"); Slow = $true }
         @{ Name = 'GNU Octave';                  File = $tools.Octave; Before = @("$scripts/GNUOctave/raytracer.m"); Estimate = $true }
         @{ Name = 'Divooka (stew, interpreted)'; File = $tools.Stew;   Before = @('--mode', 'interpreted', "$scripts/Divooka/Ray Tracer.dvk"); Estimate = $true }
     )
