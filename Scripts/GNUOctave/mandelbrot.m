@@ -45,4 +45,5 @@ function checksum = mandelbrot(width, height, maxIter)
     end
 end
 
-mandelbrot_bench()
+args = argv();
+mandelbrot_bench(args{:})

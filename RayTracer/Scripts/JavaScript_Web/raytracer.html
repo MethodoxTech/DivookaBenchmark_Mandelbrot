@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ray Tracer Benchmark</title>
+  <style>
+    body { font-family: monospace; white-space: pre-wrap; padding: 16px; }
+    canvas { display: block; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<!-- The ray tracer benchmark in a browser: the Node version's renderer, with the scene embedded below because a page cannot open a file by its path. It prints the checksum, the render time and the SHA-256 of the PPM it would write, so its picture can be compared with every other language's without saving it. ?warmup=0 skips the warm-up render. -->
+<script type="text/plain" id="scene">
+# The ray tracer benchmark's scene: a checkered floor, a mirror sphere and four coloured ones, lit by two lights.
+# Format: one directive per line, words separated by spaces, '#' starts a comment. See the README.
+size 640 480
+samples 2
+depth 4
+camera 0 1.6 -6   0 0.8 0   0 1 0   0.55
+background 0.55 0.7 0.9
+ambient 0.12 0.12 0.15
+light -4 7 -6   0.9 0.85 0.8
+light 5 4 -3    0.35 0.4 0.5
+material red     0.85 0.2 0.15   0.8 0.4 24 0.1
+material mirror  0.9 0.9 0.92    0.1 0.9 64 0.7
+material blue    0.2 0.35 0.9    0.75 0.5 32 0.15
+material gold    0.95 0.75 0.3   0.6 0.8 48 0.4
+checker floor    0.9 0.9 0.88   0.15 0.15 0.18   1   0.9 0.1 8 0.2
+plane   0 0 0        0 1 0   floor
+sphere  0 1 0        1       mirror
+sphere  -2.1 0.75 -0.6   0.75   red
+sphere  2 0.6 -0.5   0.6     blue
+sphere  0.9 0.35 -1.6   0.35   gold
+sphere  -0.8 0.3 -2   0.3     blue
+</script>
+<script>
+(async function () {
+  'use strict';
+const vec = (x, y, z) => ({ x, y, z });
+const add = (a, b) => vec(a.x + b.x, a.y + b.y, a.z + b.z);
+const sub = (a, b) => vec(a.x - b.x, a.y - b.y, a.z - b.z);
+const scale = (a, s) => vec(a.x * s, a.y * s, a.z * s);
+const mul = (a, b) => vec(a.x * b.x, a.y * b.y, a.z * b.z);
+const div = (a, s) => vec(a.x / s, a.y / s, a.z / s);
+const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+const cross = (a, b) => vec(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+const length = (v) => Math.sqrt(dot(v, v));
+const normalize = (v) => scale(v, 1.0 / length(v));
+
+const EPSILON = 1e-4;
+const FAR = 1e30;
+
+let width = 320, height = 240, samples = 1, depth = 3;
+let eye = vec(0, 0, 0), target = vec(0, 0, 1), up = vec(0, 1, 0), view = 0.5;
+let background = vec(0, 0, 0), ambient = vec(0, 0, 0);
+const lights = [];
+const shapes = [];
+const materials = new Map();
+
+// The distance along the ray to the shape, or -1 when the ray misses it.
+function intersect(shape, origin, direction) {
+    if (shape.isSphere) {
+        const offset = sub(origin, shape.point);
+        const b = dot(offset, direction);
+        const c = dot(offset, offset) - shape.radius * shape.radius;
+        const discriminant = b * b - c;
+        if (discriminant < 0)
+            return -1;
+        const root = Math.sqrt(discriminant);
+        let t = -b - root;
+        if (t > EPSILON)
+            return t;
+        t = -b + root;
+        return t > EPSILON ? t : -1;
+    }
+    const facing = dot(shape.normal, direction);
+    if (Math.abs(facing) < 1e-9)
+        return -1;
+    const distance = dot(sub(shape.point, origin), shape.normal) / facing;
+    return distance > EPSILON ? distance : -1;
+}
+
+function shadowed(origin, direction, distance) {
+    for (const shape of shapes) {
+        const t = intersect(shape, origin, direction);
+        if (t > EPSILON && t < distance)
+            return true;
+    }
+    return false;
+}
+
+function trace(origin, direction, remaining) {
+    let nearest = FAR;
+    let hit = null;
+    for (const shape of shapes) {
+        const t = intersect(shape, origin, direction);
+        if (t > EPSILON && t < nearest) {
+            nearest = t;
+            hit = shape;
+        }
+    }
+    if (hit === null)
+        return background;
+
+    const point = add(origin, scale(direction, nearest));
+    let normal = hit.isSphere ? div(sub(point, hit.point), hit.radius) : hit.normal;
+    if (dot(normal, direction) > 0)
+        normal = scale(normal, -1);
+    const material = hit.material;
+    let colour = material.colour;
+    if (material.scale > 0) {
+        const k = Math.floor(point.x / material.scale) + Math.floor(point.z / material.scale);
+        if (k - 2 * Math.floor(k / 2) !== 0)
+            colour = material.other;
+    }
+
+    let result = mul(ambient, colour);
+    const lifted = add(point, scale(normal, EPSILON));
+    for (const light of lights) {
+        const toLight = sub(light.position, point);
+        const distance = length(toLight);
+        const lightDirection = normalize(toLight);
+        if (shadowed(lifted, lightDirection, distance))
+            continue;
+        const diffuse = dot(normal, lightDirection);
+        if (diffuse > 0) {
+            result = add(result, scale(mul(colour, light.colour), material.diffuse * diffuse));
+            const reflected = sub(scale(normal, 2 * diffuse), lightDirection);
+            const specular = -dot(reflected, direction);
+            if (specular > 0) {
+                let power = 1;
+                for (let i = 0; i < material.shininess; i++)
+                    power = power * specular;
+                result = add(result, scale(light.colour, material.specular * power));
+            }
+        }
+    }
+
+    if (remaining > 0 && material.reflect > 0) {
+        const bounced = sub(direction, scale(normal, 2 * dot(direction, normal)));
+        const mirrored = trace(lifted, bounced, remaining - 1);
+        result = add(scale(result, 1 - material.reflect), scale(mirrored, material.reflect));
+    }
+    return result;
+}
+
+  function load(text) {
+    for (const raw of text.split('\n')) {
+      const comment = raw.indexOf('#');
+      const line = comment >= 0 ? raw.slice(0, comment) : raw;
+      const w = line.split(/\s+/).filter((word) => word.length > 0);
+      if (w.length === 0)
+        continue;
+      const n = (i) => Number(w[i]);
+      const v = (i) => vec(n(i), n(i + 1), n(i + 2));
+      switch (w[0]) {
+        case 'size': width = parseInt(w[1], 10); height = parseInt(w[2], 10); break;
+        case 'samples': samples = parseInt(w[1], 10); break;
+        case 'depth': depth = parseInt(w[1], 10); break;
+        case 'camera': eye = v(1); target = v(4); up = v(7); view = n(10); break;
+        case 'background': background = v(1); break;
+        case 'ambient': ambient = v(1); break;
+        case 'light': lights.push({ position: v(1), colour: v(4) }); break;
+        case 'material':
+          materials.set(w[1], { colour: v(2), other: v(2), scale: 0, diffuse: n(5), specular: n(6), shininess: parseInt(w[7], 10), reflect: n(8) });
+          break;
+        case 'checker':
+          materials.set(w[1], { colour: v(2), other: v(5), scale: n(8), diffuse: n(9), specular: n(10), shininess: parseInt(w[11], 10), reflect: n(12) });
+          break;
+        case 'sphere': shapes.push({ isSphere: true, point: v(1), normal: vec(0, 0, 0), radius: n(4), material: materials.get(w[5]) }); break;
+        case 'plane': shapes.push({ isSphere: false, point: v(1), normal: normalize(v(4)), radius: 0, material: materials.get(w[7]) }); break;
+        default: throw new Error(`Unknown directive '${w[0]}'.`);
+      }
+    }
+  }
+
+  function render() {
+    const forward = normalize(sub(target, eye));
+    const right = normalize(cross(up, forward));
+    const upward = cross(forward, right);
+    const aspect = width / height;
+    const pixels = new Uint8Array(width * height * 3);
+    let checksum = 0;
+    let at = 0;
+    for (let py = 0; py < height; py++) {
+      for (let px = 0; px < width; px++) {
+        let colour = vec(0, 0, 0);
+        for (let sy = 0; sy < samples; sy++) {
+          for (let sx = 0; sx < samples; sx++) {
+            const u = (px + (sx + 0.5) / samples) / width * 2 - 1;
+            const v = 1 - (py + (sy + 0.5) / samples) / height * 2;
+            const direction = normalize(add(add(forward, scale(right, u * aspect * view)), scale(upward, v * view)));
+            colour = add(colour, trace(eye, direction, depth));
+          }
+        }
+        colour = div(colour, samples * samples);
+        for (const channel of [colour.x, colour.y, colour.z]) {
+          const c = channel < 0 ? 0 : channel > 1 ? 1 : channel;
+          const value = Math.floor(Math.sqrt(c) * 255 + 0.5);
+          pixels[at++] = value;
+          checksum += value;
+        }
+      }
+    }
+    return { pixels, checksum };
+  }
+
+  function print(text) {
+    document.body.appendChild(document.createTextNode(text + '\n'));
+  }
+
+  load(document.getElementById('scene').textContent);
+  if (new URLSearchParams(window.location.search).get('warmup') !== '0')
+    render();
+  const started = performance.now();
+  const { pixels, checksum } = render();
+  const elapsed = performance.now() - started;
+
+  const header = new TextEncoder().encode(`P6\n${width} ${height}\n255\n`);
+  const ppm = new Uint8Array(header.length + pixels.length);
+  ppm.set(header, 0);
+  ppm.set(pixels, header.length);
+  const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', ppm)), (b) => b.toString(16).padStart(2, '0')).join('');
+
+  print(`Checksum: ${checksum}`);
+  print(`Render: ${elapsed.toFixed(2)} ms`);
+  print(`PPM SHA-256: ${digest}`);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const image = canvas.getContext('2d').createImageData(width, height);
+  for (let i = 0, j = 0; i < pixels.length; i += 3, j += 4) {
+    image.data[j] = pixels[i];
+    image.data[j + 1] = pixels[i + 1];
+    image.data[j + 2] = pixels[i + 2];
+    image.data[j + 3] = 255;
+  }
+  canvas.getContext('2d').putImageData(image, 0, 0);
+  document.body.appendChild(canvas);
+})();
+</script>
+</body>
+</html>

@@ -7,3 +7,7 @@ obj
 *.pubxml.user
 *.vcxproj.user
 *.vcxproj.filters
+# Built by Benchmark/Build.ps1
+Artifacts/Build/
+# Written by Benchmark/Benchmark.ps1: every run, and the summary
+Results/

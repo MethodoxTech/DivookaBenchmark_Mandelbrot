@@ -2,19 +2,116 @@
 
 # Divooka Mandelbrot Benchmark
 
-A benchmark for Divooka.
+Benchmarks for Divooka, against the languages people would otherwise reach for: **Mandelbrot**, a tight loop of arithmetic, and **Ray Tracer**, a small but complete program that reads a scene from a file, recurses, and writes a picture.
 
 ## Experiment Set
 
 > Conclusion: A JIT (just-in-time compiler) is essential to any modern high performance scripting language.
 
+### Mandelbrot
+
 **Setup**
 
-Mandelbrot:
-
-* Default 2000 x 2000, MaxIter = 1000, Runs = 5 (Correct output: 689833081)
+* 2000 x 2000, MaxIter = 1000 (correct output: 689833081); every program also takes the size as `[width] [height] [maxIter]`
 * Exercises integer math, floating point, loops, branches, function calls, and memory writes
-* Compare the printed checksum matches across all implementations
+* Every run's printed checksum is compared with the reference's, and a run that differs is not counted
+
+**Results (20261024)**
+
+Every language run again with the method below: the median of five rounds, three for the slow ones, with the fastest and slowest run beside it. **Provisional**: other work was running on the machine. The programs that take seconds were measured twice, and their rows are from the quieter session (the processor 4% to 35% busy before each round, 26% at the median); the slow ones, from Elixir down, ran once, with the processor 7% to 92% busy (38% at the median), which slows a long run most: Python's median is twice what it was in March on the same Python.
+
+|Rank (by Time)|Platform|Size|Run Time (ms, median)|Range (ms)|Peak Memory|
+|-|-|-|-:|-|-:|
+|1|Go|2.4 MB|1,335.84|1,294.75 - 5,219.69|37.48 MB|
+|2|C++|15 KB|1,368.68|1,347.09 - 1,490.50|19.08 MB|
+|3|C# AoT|916 KB|1,406.34|1,382.91 - 1,619.13|22.30 MB|
+|4|JavaScript (Node)|1 KB + 104 MB|1,441.62|1,425.10 - 1,529.44|53.57 MB|
+|5|JavaScript (Web/Chrome)|3 KB|1,466.70 (render only)|1,375.70 - 1,525.80|N/A|
+|6|Julia|1 KB + 1.1 GB|1,546.59|1,523.35 - 1,831.54|163.32 MB|
+|7|C# (.NET 10)|12.3 MB|1,556.33|1,518.21 - 1,630.63|40.13 MB|
+|8|Java (Temurin 17.0.11)|2 KB + 303 MB|2,225.39|1,703.51 - 2,905.58|56.14 MB|
+|9|Pure 2 (Divooka Pure)|1 KB + 1.75 GB|2,526.64|2,432.84 - 2,683.12|202.84 MB|
+|10|Haskell (GHC 9.10.3)|11.4 MB|2,831.05|2,818.44 - 2,921.94|43.38 MB|
+|11|Divooka (AviatorBeta program)|77.2 MB|3,793.71|3,754.41 - 4,236.41|53.61 MB|
+|12|Divooka (Stewer, compiled)|7 KB + 1.75 GB|6,410.04|6,120.30 - 6,912.88|343.46 MB|
+|13|Elixir (1.14.4, OTP 25)|2 KB + 387 MB|12,973.86|10,847.94 - 19,745.77|56.94 MB|
+|14|Ruby (4.0.9)|1 KB + 304 MB|96,404.04|82,093.14 - 111,871.05|47.19 MB|
+|15|Python (3.13.5)|1 KB + 151 MB|96,981.26|84,764.84 - 97,928.50|61.74 MB|
+|16|Perl (5.42.3)|1 KB + 1.1 GB|206,107.18|201,216.36 - 224,165.19|200.11 MB|
+|17|Prolog (SWI 9.0.4)|2 KB + 47 MB|664,090.70 (11 min)|576,466.76 - 672,132.51|13.66 MB|
+|18|GNU Octave (7.3.0)|1 KB + 2.2 GB|(Est.) 5,074,024 (85 min)|from 7,624 at 100 x 100 and 45,319 at 200 x 200|35.17 MB|
+|19|Divooka (Stewer, interpreted)|7 KB + 1.75 GB|(Est.) 13,517,210 (3.8 hr)|from 49,078 at 100 x 100 and 149,285 at 200 x 200|205.57 MB|
+|N/A|Divooka (GP; Stewer)|||Not runnable: see [Divooka (GP; Stewer)](#divooka-gp-stewer)||
+
+Notes:
+
+* Size is the program and what it needs to run: a built program alone, or a script plus its runtime's installed folder. Go and Haskell are built ahead of time, so their toolchains (255 MB and 3.4 GB) are needed only to build. Divooka's documents run in a Divooka Compute folder (1.75 GB, everything included), which also carries Divooka Pure; the AviatorBeta program is a document built into a self-contained program of its own, as Divooka Compute's Publish builds one.
+* "Divooka (Stewer, compiled)" compiles the document on every run, which is most of its distance from the AviatorBeta program; "Divooka (Stewer, interpreted)" is the node-by-node interpreter the editor's Interpreted run uses. The Neo editor's estimate in the earlier results, 95.8 hours, was that interpreter's ancestor; the estimate here is 3.8 hours, on a busier machine.
+* Pure 2 runs the C# version as a script, which Roslyn compiles when the run starts, inside Divooka Pure's process.
+* Estimates: see Method. GNU Octave measured 41 minutes for the full size in March; its estimate here is twice that, as Python's median is twice March's.
+
+### Ray Tracer
+
+A small but complete command-line ray tracer: it reads a scene from a text file, traces it, and writes the picture as a binary PPM. Spheres and planes, plain and checkered materials, point lights casting hard shadows, Phong highlights, mirror reflections, and several samples per pixel. It exercises what Mandelbrot does not: reading and parsing a file, records and lists, recursion, a call per intersection, and writing a binary file.
+
+* `raytracer <scene.txt> <output.ppm>`; it prints `Checksum: <the sum of every byte of the picture>`.
+* The scene (`RayTracer/scene.txt`): 640 x 480, 2 x 2 samples per pixel, reflections 4 deep, a checkered floor, a mirror sphere and four coloured ones, two lights. Correct output: `Checksum: 167196110`, and a picture whose SHA-256 is `c481fbea89bb8e6b7d2a97202005b1e3a65f3dfc5daf1abfff4c301debcf9c14`.
+* **Every language writes the same picture, to the byte.** The C# version (`RayTracer/Scripts/C#`) is the reference, and every other one makes the same floating-point operations in the same order: vectors are added, subtracted, multiplied and divided component by component; `dot(a, b) = (a.x*b.x + a.y*b.y) + a.z*b.z`; `length(v) = sqrt(dot(v, v))`; `normalize(v) = v * (1 / length(v))`; a power with a whole exponent is repeated multiplication; and nothing else is used but `+ - * /`, `sqrt`, `floor` and comparisons, which IEEE double precision rounds the same way everywhere. Nothing may fuse a multiply and an add into one instruction, which rounds once instead of twice: C++ is compiled with MSVC's default `/fp:precise`, Go for `GOAMD64=v1`, Java 17 is strict by definition. The harness checks every run's picture against the reference's.
+
+**Scene format.** One directive per line, its words separated by spaces; `#` starts a comment, and blank lines are ignored. Colours are red, green and blue from 0 to 1. A material must be declared before a shape uses it.
+
+|Directive|Meaning|Default|
+|-|-|-|
+|`size <width> <height>`|The picture's size in pixels.|`320 240`|
+|`samples <n>`|n x n rays per pixel, spread evenly over it and averaged.|`1`|
+|`depth <n>`|How many times a ray may bounce off mirrors.|`3`|
+|`camera <eye x y z> <target x y z> <up x y z> <view>`|Where the eye is, what it looks at, which way is up, and half the height of the view at distance 1.|`0 0 0  0 0 1  0 1 0  0.5`|
+|`background <r g b>`|The colour of a ray that meets nothing.|`0 0 0`|
+|`ambient <r g b>`|The light every surface receives everywhere.|`0 0 0`|
+|`light <x y z> <r g b>`|A point light: where it is and its colour.||
+|`material <name> <r g b> <diffuse> <specular> <shininess> <reflect>`|A plain material: its colour, how much diffuse and specular light it returns, the highlight's exponent (a whole number), and how much of the mirrored ray it mixes in.||
+|`checker <name> <r g b> <r g b> <scale> <diffuse> <specular> <shininess> <reflect>`|A checkerboard of two colours in squares `scale` wide, laid on x and z.||
+|`sphere <x y z> <radius> <material>`|A sphere: its centre, radius and material.||
+|`plane <x y z> <nx ny nz> <material>`|A plane through a point, facing along a normal.||
+
+**What it computes.** For each pixel and sample, a ray from the eye through the view; the nearest shape it meets more than 0.0001 along it; that point's normal, turned to face the ray; the material's colour, or the checker's other colour where `floor(x / scale) + floor(z / scale)` is odd. The point is lit by the ambient light, and by each light no shape blocks: diffuse light (colour x light x diffuse x cos), and a highlight (light x specular x cos^shininess of the reflected light). A reflective material then mixes in what the mirrored ray sees, traced the same way while bounces remain. The samples are averaged, each channel clamped to 0..1, and written as `floor(sqrt(c) * 255 + 0.5)`.
+
+**Results (20261024)**
+
+Measured as Mandelbrot's were, and **provisional** for the same reason. The programs that take about a second come from the quieter of two sessions (the processor 4% to 34% busy before each round, 7% at the median); Elixir, Python, Ruby and Perl ran once, the processor 6% to 36% busy (32% at the median); Prolog ran at full size in a session of its own, the processor 1% to 12% busy. Every run wrote the reference's picture to the byte.
+
+|Rank (by Time)|Platform|Size|Run Time (ms, median)|Range (ms)|Peak Memory|
+|-|-|-|-:|-|-:|
+|1|Go|2.6 MB|141.89|140.51 - 168.01|6.99 MB|
+|2|C++|63 KB|151.74|149.05 - 190.49|5.11 MB|
+|3|Java (Temurin 17.0.11)|10 KB + 303 MB|355.69|347.00 - 538.81|322.20 MB|
+|4|JavaScript (Node)|7 KB + 104 MB|431.14|424.44 - 862.73|44.00 MB|
+|5|C# AoT|1.1 MB|444.84|434.88 - 505.56|8.17 MB|
+|6|Haskell (GHC 9.10.3)|16.5 MB|447.65|431.56 - 835.06|199.24 MB|
+|7|C# (.NET 10)|12.2 MB|485.96|472.93 - 634.14|25.11 MB|
+|8|Divooka (AviatorBeta program)|77.6 MB|648.64|622.13 - 746.16|43.02 MB|
+|9|JavaScript (Web/Chrome)|10 KB|879.20 (render only)|241.30 - 889.10|N/A|
+|10|Julia|8 KB + 1.1 GB|899.55|793.42 - 1,587.86|204.96 MB|
+|11|Pure 2 (Divooka Pure)|10 KB + 1.75 GB|1,900.23|1,777.44 - 2,537.88|200.79 MB|
+|12|Divooka (Stewer, compiled)|29 KB + 1.75 GB|4,293.93|4,111.23 - 7,034.08|364.79 MB|
+|13|Elixir (1.14.4, OTP 25)|8 KB + 387 MB|8,534.71|8,243.15 - 11,361.51|84.22 MB|
+|14|Python (3.13.5)|8 KB + 151 MB|28,154.45|27,946.62 - 30,782.72|12.68 MB|
+|15|Ruby (4.0.9)|6 KB + 304 MB|28,546.87|27,152.62 - 30,082.89|25.62 MB|
+|16|Prolog (SWI 9.0.4)|12 KB + 47 MB|83,120.65|79,749.23 - 86,469.49|14.61 MB|
+|17|Perl (5.42.3)|7 KB + 1.1 GB|99,681.72|84,859.91 - 123,144.87|78.71 MB|
+|18|Divooka (Stewer, interpreted)|29 KB + 1.75 GB|2,641,014 (44 min), one run|estimated at 3,600,795 from 8,225 at 80 x 60 and 50,491 at 160 x 120|256.31 MB at 160 x 120|
+|19|GNU Octave (7.3.0)|8 KB + 2.2 GB|(Est.) 2,734,400 (46 min)|from 7,837 at 80 x 60 and 39,914 at 160 x 120|35.80 MB|
+|N/A|Divooka (GP; Stewer)|||Not runnable: see [Divooka (GP; Stewer)](#divooka-gp-stewer)||
+
+Notes:
+
+* About a second of work is not much next to a runtime's start-up, so on this benchmark Java's and Julia's include a large share of starting, and Julia compiles the program on every run.
+* The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
+* Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
+
+### Earlier results
+
+Taken from March to October 2026 with the previous version of `Benchmark/Benchmark.ps1`, which ran each program five times in a row; the table shows each program's fastest run, and is kept as it was, but for the empty rows it held for Haskell, Julia, Perl, Elixir, Pure 2 and Divooka (GP; Stewer), which the 20261024 tables fill. The 20261024 tables above re-measure every language with the method below, so compare within a table, not across them.
 
 **Best Results**
 
@@ -43,12 +140,6 @@ Mandelbrot:
 |19|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
 |20 (Tie)|Grok (Fast)|N/A|Failed|N/A|
 |20 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
-|N/A|Haskell||||
-|N/A|Julia||||
-|N/A|Perl||||
-|N/A|Elixir||||
-|N/A|Pure 2||||
-|N/A|Divooka (GP; Stewer)||||
 
 Notes:
 
@@ -97,6 +188,65 @@ Notes:
 * Best managed runtime: C#.
 * Divooka compiled lands mid-pack, beating Python, Ruby, Prolog, Octave by large margins.
 * Divooka runtime/editor modes show tooling overhead rather than core language speed.
+
+## Running the benchmarks
+
+```
+pwsh Benchmark/Build.ps1                                   # C++, C#, C# AoT, Go, Java and Haskell, both benchmarks, into Artifacts/Build;
+                                                           # with BENCH_AVIATOR set to a Divooka Compute folder's AviatorBeta.exe, each Divooka document as a program too
+pwsh Benchmark/Benchmark.ps1 -Benchmark Mandelbrot         # every program, five rounds, slow ones three
+pwsh Benchmark/Benchmark.ps1 -Benchmark RayTracer -Only 'C#','Divooka*'
+```
+
+`Benchmark.ps1` finds each language on PATH, or where an environment variable says: `BENCH_JAVA` (else `JAVA_HOME`'s), `BENCH_NODE`, `BENCH_JULIA`, `BENCH_PYTHON`, `BENCH_RUBY`, `BENCH_PERL`, `BENCH_ERL` with `BENCH_ELIXIR` (the folder holding Elixir's `lib`), `BENCH_SWIPL`, `BENCH_OCTAVE` (`octave-cli`), `BENCH_PURE` (`pure.exe`: Divooka Pure's, or Pure 2's own), `BENCH_STEW` (`stew.exe` in a Divooka Compute folder) and `BENCH_CHROME`. A program whose language is not found is skipped, and the run says so. Every run, and the summary table, is written under `Results/` (ignored by git).
+
+The Divooka documents (`Scripts/Divooka/mandelbrot.dvk`, `RayTracer/Scripts/Divooka/Ray Tracer.dvk`) are written by the Divooka examples Writer, `DivookaExamplesWriter benchmarks <this folder>`, from recipes in the Parcel NExT repository (`MandelbrotRecipe`, `RayTracerBenchmarkRecipe`). Remake them after a Divooka format change rather than editing them. Run them with the `stew` of a Divooka Compute distribution:
+
+```
+stew Scripts/Divooka/mandelbrot.dvk 2000 2000 1000                                     # compiled, the default
+stew --mode interpreted Scripts/Divooka/mandelbrot.dvk 200 200 1000                    # the interpreter
+stew "RayTracer/Scripts/Divooka/Ray Tracer.dvk" RayTracer/scene.txt picture.ppm
+```
+
+## Method
+
+From the 20261024 record on, every figure here is measured by `Benchmark/Benchmark.ps1`, which works as follows. Earlier records were taken with the previous version of the script, which ran each program five times in a row and summarized the runs by their average, fastest and slowest; they are kept below as they were.
+
+* **Alternated.** Every program runs once per round, and the order turns by one place each round, so whatever else the machine was doing lands on every program alike rather than on whichever happened to be running.
+* **One run, one process,** started with its standard input closed - a program that waits for input would otherwise wait for ever (GNU Octave does, given a terminal).
+* **Median and range.** The time is the wall clock from starting the process to its exit, so a runtime's start-up is in it, as it is for anyone running the program. Each figure is the median of the rounds, with the fastest and slowest beside it; never an average, and never a best run. Five rounds for programs that take seconds, three for the slow ones.
+* **Peak memory** is the peak working set Windows recorded for the process. Elixir is started on the Erlang runtime directly, as `elixir.bat` would start it, so the process measured is the one doing the work.
+* **Right answers only.** The reference (C# AoT) runs first on every size used; a run counts only if it printed the reference's checksum - and, for the ray tracer, wrote a picture whose SHA-256 is the reference's. A wrong answer is reported and kept out of the figures.
+* **Estimates.** A program too slow to run at full size - GNU Octave and Divooka interpreted - runs at two smaller sizes instead (Mandelbrot 100 x 100 and 200 x 200 at 1000 iterations; the ray tracer's scene at 80 x 60 and 160 x 120 with one sample), and the full size's time is read off the line through the two, by the work each size does: the iterations a Mandelbrot run makes, which is its checksum, or the primary rays the ray tracer traces. Estimates are labelled.
+* **The browser** times itself: Chrome runs the page headless, and the page times its own render after a warm-up render, so its figure has no start-up in it and is not comparable with the others'. Its memory is not measured.
+* **The machine's load** is sampled before every round and reported with the results. A busy machine moves every figure; when it was busy, the record says so and the figures are provisional.
+
+## Toolchains (20261024)
+
+What the 20261024 record ran on. The ones marked *installed for this record* were added to the machine then, each with its vendor's own silent installer or archive, for the current user, and put on the user's PATH; the rest were already there.
+
+|Language|Version|Where|
+|-|-|-|
+|C++|MSVC 14.51 (Visual Studio Community 2026 18.10.1), `/O2`, `/fp:precise`|Visual Studio's own|
+|C#, C# AoT|.NET SDK 10.0.401 (runtime 10.0); C# self-contained single-file trimmed, C# AoT NativeAOT|`C:\Program Files\dotnet`|
+|Go|1.26.1, `GOAMD64=v1`|`C:\Program Files\Go`|
+|Java|Eclipse Temurin 17.0.11 (`JAVA_HOME`)|`C:\Program Files\Eclipse Adoptium\jdk-17.0.11.9-hotspot`|
+|Haskell|GHC 9.10.3, `-O2`, by GHCup 0.2.7.0 - *installed for this record*|`C:\ghcup`|
+|JavaScript (Node)|Node.js 24.11.1|`C:\Program Files\nodejs`|
+|JavaScript (Web)|Chrome 155, headless|`C:\Program Files\Google\Chrome`|
+|Julia|1.13.2 - *installed for this record*|`%LOCALAPPDATA%\Programs\Julia-1.13.2`|
+|Python|CPython 3.13.5|`C:\Program Files\Python313`|
+|Ruby|4.0.9 (RubyInstaller, built without YJIT) - *installed for this record*|`C:\Ruby40-x64`|
+|Perl|Strawberry Perl 5.42.3.1, portable - *installed for this record*|`C:\Strawberry`|
+|Elixir|1.14.4 on Erlang/OTP 25|`C:\Program Files (x86)\Elixir`, `C:\Program Files\Erlang OTP`|
+|Prolog|SWI-Prolog 9.0.4|`C:\Program Files\swipl`|
+|GNU Octave|7.3.0, `octave-cli`|`C:\Program Files\GNU Octave\Octave-7.3.0`|
+|Pure 2|Divooka Pure 0.1.0 (Pure 2.3.0), from the Divooka Compute build below|that build's `pure.exe`|
+|Divooka|Divooka Compute, built from Parcel NExT's round-24 branch (`r24-performance`), with `stew` 0.8.0 and AviatorBeta 0.2|that build's `stew.exe` and `AviatorBeta.exe`|
+
+## Divooka (GP; Stewer)
+
+This row stays empty, and why is worth saying. "GP" is general-purpose GPU compute: a document's graph emitted as a compute shader and run on the graphics card. Divooka's code generator has the mode (`GPCompute`), but it is not implemented - `DivookaGLSLCodeGen.GenerateGraphGPComputePreviewScript` throws `NotImplementedException` - and `stew` has no way to ask for it, so there is no program to run. The fragment-shader generator beside it is implemented, but it draws the editor's shader previews; it does not make a program that runs on the command line and prints a checksum.
 
 ## Records
 
@@ -378,11 +528,127 @@ Divooka Matrix Operator (default)    -  about 13,600-15,300 (previous record)
 
 The JIT build runs this loop-heavy script within about 10% of C# AoT. It starts slower (about 60 ms instead of 10 ms) and is larger to download, so the ahead-of-time compiled build stays the default for general use.
 
+## 20261024
+
+Every language of both benchmarks, measured by `Benchmark/Benchmark.ps1` as described under Method, on the machine of the earlier records, with the toolchains listed under Toolchains. Other work was running on the machine through all of it, so every figure is provisional; the processor's load before each round is in each run's first line. Five sessions: the whole of each benchmark, then the programs that take seconds again while the machine was quieter, and the Prolog ray tracer at full size instead of estimated.
+
+```
+CPU       : 13th Gen Intel(R) Core(TM) i7-13700KF
+Cores     : 16
+Threads   : 24
+RAM_GB    : 127.84
+OS        : Microsoft Windows 11 Pro
+OSVersion : 10.0.22631
+```
+
+**Mandelbrot, every program**
+
+Benchmark: Mandelbrot (2000x2000x1000); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 37.5% (range 6.8% - 91.5%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|C++|1,367.08|1,351.41 - 2,560.07|19.09|5|0||
+|JavaScript (Web/Chrome)|1,497.70|1,469.90 - 1,676.80|N/A|5|0|in page, render only|
+|JavaScript (Node)|1,549.75|1,408.47 - 2,313.01|53.71|5|0||
+|C# AoT|1,553.85|1,375.69 - 2,459.25|22.30|5|0||
+|Go|1,617.14|1,300.07 - 2,997.06|37.45|5|0||
+|Julia|1,676.67|1,515.85 - 4,850.71|163.34|5|0||
+|C#|1,677.99|1,607.90 - 2,382.66|40.16|5|0||
+|Pure 2|2,539.91|2,399.60 - 4,305.90|203.09|5|0||
+|Java|2,571.02|1,661.97 - 3,035.47|55.91|5|0||
+|Haskell|2,902.69|2,753.17 - 3,240.83|43.38|5|0||
+|Divooka (AviatorBeta program)|3,956.45|3,696.86 - 4,578.71|53.55|5|0||
+|Divooka (stew, compiled)|7,337.78|6,116.94 - 8,508.83|344.27|5|0||
+|Elixir|12,973.86|10,847.94 - 19,745.77|56.94|3|0||
+|Ruby|96,404.04|82,093.14 - 111,871.05|47.19|3|0||
+|Python|96,981.26|84,764.84 - 97,928.50|61.74|3|0||
+|Perl|206,107.18|201,216.36 - 224,165.19|200.11|3|0||
+|Prolog (SWI)|664,090.70|576,466.76 - 672,132.51|13.66|3|0||
+|GNU Octave|5,074,024.00|estimate, from medians 7,624 ms at 100x100x1000 and 45,319 ms at 200x200x1000|35.17|6|0|estimate; memory at 200x200x1000|
+|Divooka (stew, interpreted)|13,517,210.00|estimate, from medians 49,078 ms at 100x100x1000 and 149,285 ms at 200x200x1000|205.57|6|0|estimate; memory at 200x200x1000|
+
+**Mandelbrot, the programs that take seconds, again**
+
+Benchmark: Mandelbrot (2000x2000x1000); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 25.6% (range 3.9% - 35.4%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Go|1,335.84|1,294.75 - 5,219.69|37.48|5|0||
+|C++|1,368.68|1,347.09 - 1,490.50|19.08|5|0||
+|C# AoT|1,406.34|1,382.91 - 1,619.13|22.30|5|0||
+|JavaScript (Node)|1,441.62|1,425.10 - 1,529.44|53.57|5|0||
+|JavaScript (Web/Chrome)|1,466.70|1,375.70 - 1,525.80|N/A|5|0|in page, render only|
+|Julia|1,546.59|1,523.35 - 1,831.54|163.32|5|0||
+|C#|1,556.33|1,518.21 - 1,630.63|40.13|5|0||
+|Java|2,225.39|1,703.51 - 2,905.58|56.14|5|0||
+|Pure 2|2,526.64|2,432.84 - 2,683.12|202.84|5|0||
+|Haskell|2,831.05|2,818.44 - 2,921.94|43.38|5|0||
+|Divooka (AviatorBeta program)|3,793.71|3,754.41 - 4,236.41|53.61|5|0||
+|Divooka (stew, compiled)|6,410.04|6,120.30 - 6,912.88|343.46|5|0||
+
+**Ray Tracer, every program**
+
+Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 32.3% (range 6.2% - 35.7%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|C++|157.52|150.37 - 392.45|5.11|5|0||
+|Go|185.57|143.94 - 1,015.78|6.88|5|0||
+|Java|443.59|355.89 - 1,456.86|321.67|5|0||
+|C# AoT|461.96|440.95 - 478.34|8.16|5|0||
+|Haskell|489.03|422.71 - 1,294.00|199.25|5|0||
+|C#|496.36|470.33 - 671.42|25.07|5|0||
+|Divooka (AviatorBeta program)|678.51|636.69 - 1,074.00|43.06|5|0||
+|JavaScript (Node)|699.04|429.58 - 1,795.24|44.04|5|0||
+|JavaScript (Web/Chrome)|829.50|237.30 - 1,409.60|N/A|5|0|in page, render only|
+|Julia|1,725.63|801.62 - 5,922.31|204.96|5|0||
+|Pure 2|2,502.49|1,789.59 - 4,530.88|201.54|5|0||
+|Divooka (stew, compiled)|4,460.27|3,853.87 - 4,928.16|375.53|5|0||
+|Elixir|8,534.71|8,243.15 - 11,361.51|84.22|3|0||
+|Python|28,154.45|27,946.62 - 30,782.72|12.68|3|0||
+|Ruby|28,546.87|27,152.62 - 30,082.89|25.62|3|0||
+|Prolog (SWI)|78,606.00|estimate, from medians 289 ms at 80x60 and 1,211 ms at 160x120|14.67|6|0|estimate; memory at 160x120|
+|Perl|99,681.72|84,859.91 - 123,144.87|78.71|3|0||
+|GNU Octave|2,734,400.00|estimate, from medians 7,837 ms at 80x60 and 39,914 ms at 160x120|35.80|6|0|estimate; memory at 160x120|
+|Divooka (stew, interpreted)|3,600,795.00|estimate, from medians 8,225 ms at 80x60 and 50,491 ms at 160x120|256.31|6|0|estimate; memory at 160x120|
+
+**Ray Tracer, Prolog at full size**
+
+Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 3.4% (range 1.4% - 12.3%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Prolog (SWI)|83,120.65|79,749.23 - 86,469.49|14.61|3|0||
+
+**Ray Tracer, the programs that take seconds, again**
+
+Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 6.7% (range 3.6% - 34.2%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Go|141.89|140.51 - 168.01|6.99|5|0||
+|C++|151.74|149.05 - 190.49|5.11|5|0||
+|Java|355.69|347.00 - 538.81|322.20|5|0||
+|JavaScript (Node)|431.14|424.44 - 862.73|44.00|5|0||
+|C# AoT|444.84|434.88 - 505.56|8.17|5|0||
+|Haskell|447.65|431.56 - 835.06|199.24|5|0||
+|C#|485.96|472.93 - 634.14|25.11|5|0||
+|Divooka (AviatorBeta program)|648.64|622.13 - 746.16|43.02|5|0||
+|JavaScript (Web/Chrome)|879.20|241.30 - 889.10|N/A|5|0|in page, render only|
+|Julia|899.55|793.42 - 1,587.86|204.96|5|0||
+|Pure 2|1,900.23|1,777.44 - 2,537.88|200.79|5|0||
+|Divooka (stew, compiled)|4,293.93|4,111.23 - 7,034.08|364.79|5|0||
+
+Divooka (Stewer, interpreted), the ray tracer at full size, once, after the sessions above and while the Parcel NExT test suites ran on the same machine: 2,641,014 ms, `Checksum: 167196110`, and the reference's SHA-256.
+
+The reference's answers: Mandelbrot 689833081 at 2000 x 2000 (1703126 at 100 x 100 and 6823016 at 200 x 200, the work the estimates are drawn through); the ray tracer `Checksum: 167196110` and SHA-256 `c481fbea89bb8e6b7d2a97202005b1e3a65f3dfc5daf1abfff4c301debcf9c14` for scene.txt, 2617306 and `12aa506a...` at 80 x 60, 10420415 and `18bccd53...` at 160 x 120.
+
 ## Limitations
 
-The benchmark only tests simple loops and large integers:
+Mandelbrot only tests simple loops and large integers; the ray tracer adds a file read, records, recursion and a binary write, but it is still one program:
 
-* Other programs do not have special warm-up handling so JavaScript (web) has an advantage.
-* There are a few loops but no recursion or deep function calls - Divooka may suffer when call hierarchy is deep.
-* This tests raw native run time speed, but different programming systems have different uses - e.g. people rarely use Python as is.
+* The browser times its own render after a warm-up, and no other program has a warm-up, so JavaScript (web) has an advantage, and its figures are not comparable with the others'.
+* Every other time includes its runtime's start-up, as it does for anyone running the program: Julia and Java pay theirs on every run, and on the ray tracer, which takes about a second in the fastest languages, that start-up is a large share of what is measured.
+* This tests raw run time speed, but different programming systems have different uses - e.g. people rarely use Python as is.
 * Certain languages are more suited for certain things. GNU Octave is supposedly very good at matrix.
+* The estimates assume the time a program takes grows in a straight line with the work it does; for a Mandelbrot run that work is its iterations, and for the ray tracer its primary rays, which spend about the same on average at any resolution of the same view.
