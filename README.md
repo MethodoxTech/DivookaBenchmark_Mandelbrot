@@ -109,6 +109,31 @@ Notes:
 * The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
 * Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
 
+### SteelPython (20261029)
+
+[SteelPython](https://wiki.methodox.io/en/Utilities/SteelPython) is Methodox's implementation of Python 3.12 on .NET, which comes with Divooka Compute. It runs the same scripts as CPython (`Scripts/Python/mandelbrotpython.py`, `RayTracer/Scripts/Python/raytracer.py`), unchanged. Its rows were measured in a session of their own, with CPython beside it so that the two compare on the same machine at the same load (CPython 3.13.1 here, the tables above used 3.13.5): three rounds each, the processor 5% to 20% busy before each Mandelbrot round (10% at the median) and 2% to 5% before each Ray Tracer round. "SteelPython" is the `spy.exe` of its full distribution, on the .NET runtime, as Divooka Compute ships it; "SteelPython (Native AOT)" that of its embedded distribution, compiled ahead of time. SteelPython 0.1.0; every run printed the reference's checksum and wrote its picture.
+
+**Mandelbrot** (2000 x 2000, MaxIter = 1000)
+
+|Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
+|-|-:|-|-:|-:|
+|Python (CPython 3.13.1)|112,010.59|107,529.98 - 133,005.13|61.80 MB|1.00x|
+|SteelPython (Native AOT)|112,091.22|109,251.82 - 123,269.03|87.70 MB|1.00x|
+|SteelPython (.NET 10)|114,665.00|108,154.30 - 122,947.55|106.26 MB|1.02x|
+
+**Ray Tracer** (`RayTracer/scene.txt`)
+
+|Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
+|-|-:|-|-:|-:|
+|Python (CPython 3.13.1)|37,144.40|36,545.83 - 37,638.15|12.72 MB|1.00x|
+|SteelPython (.NET 10)|43,203.51|42,787.61 - 43,210.83|73.31 MB|1.16x|
+|SteelPython (Native AOT)|43,774.80|43,584.35 - 44,129.11|58.41 MB|1.18x|
+
+Notes:
+
+* SteelPython keeps pace with CPython on Mandelbrot's arithmetic loop, where its interpreter holds ints and floats without objects; the ray tracer, which allocates a vector object for every intermediate result and calls a method per operation, is where it is slower. Its next version (0.3) changes how it executes and stores values, aiming at least at CPython's speed on both.
+* Peak memory includes the .NET runtime (the full distribution) or the native executable (Native AOT).
+
 ### Earlier results
 
 Taken from March to October 2026 with the previous version of `Benchmark/Benchmark.ps1`, which ran each program five times in a row; the table shows each program's fastest run, and is kept as it was, but for the empty rows it held for Haskell, Julia, Perl, Elixir, Pure 2 and Divooka (GP; Stewer), which the 20261024 tables fill. The 20261024 tables above re-measure every language with the method below, so compare within a table, not across them.
@@ -198,7 +223,9 @@ pwsh Benchmark/Benchmark.ps1 -Benchmark Mandelbrot         # every program, five
 pwsh Benchmark/Benchmark.ps1 -Benchmark RayTracer -Only 'C#','Divooka*'
 ```
 
-`Benchmark.ps1` finds each language on PATH, or where an environment variable says: `BENCH_JAVA` (else `JAVA_HOME`'s), `BENCH_NODE`, `BENCH_JULIA`, `BENCH_PYTHON`, `BENCH_RUBY`, `BENCH_PERL`, `BENCH_ERL` with `BENCH_ELIXIR` (the folder holding Elixir's `lib`), `BENCH_SWIPL`, `BENCH_OCTAVE` (`octave-cli`), `BENCH_PURE` (`pure.exe`: Divooka Pure's, or Pure 2's own), `BENCH_STEW` (`stew.exe` in a Divooka Compute folder) and `BENCH_CHROME`. A program whose language is not found is skipped, and the run says so. Every run, and the summary table, is written under `Results/` (ignored by git).
+`-Only` takes several names when the script is called from PowerShell (`& ./Benchmark/Benchmark.ps1 -Benchmark Mandelbrot -Only @('Python', 'SteelPython*')`); through `pwsh -File`, the second name would be taken for `-Rounds`.
+
+`Benchmark.ps1` finds each language on PATH, or where an environment variable says: `BENCH_JAVA` (else `JAVA_HOME`'s), `BENCH_NODE`, `BENCH_JULIA`, `BENCH_PYTHON`, `BENCH_RUBY`, `BENCH_PERL`, `BENCH_ERL` with `BENCH_ELIXIR` (the folder holding Elixir's `lib`), `BENCH_SWIPL`, `BENCH_OCTAVE` (`octave-cli`), `BENCH_PURE` (`pure.exe`: Divooka Pure's, or Pure 2's own), `BENCH_STEW` (`stew.exe` in a Divooka Compute folder), `BENCH_SPY` and `BENCH_SPY_AOT` (SteelPython's `spy.exe`: of its full distribution, and of its embedded Native AOT one) and `BENCH_CHROME`. A program whose language is not found is skipped, and the run says so. Every run, and the summary table, is written under `Results/` (ignored by git).
 
 The Divooka documents (`Scripts/Divooka/mandelbrot.dvk`, `RayTracer/Scripts/Divooka/Ray Tracer.dvk`) are written by the Divooka examples Writer, `DivookaExamplesWriter benchmarks <this folder>`, from recipes in the Parcel NExT repository (`MandelbrotRecipe`, `RayTracerBenchmarkRecipe`). Remake them after a Divooka format change rather than editing them. Run them with the `stew` of a Divooka Compute distribution:
 

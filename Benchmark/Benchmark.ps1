@@ -11,7 +11,7 @@ A program too slow to run at full size is estimated: it runs at two smaller size
 
 The browser is timed by the page itself, render only: Chrome runs it headless and the harness reads what it printed.
 
-Build the compiled programs first (Build.ps1). Tools are found on PATH unless an environment variable names them: BENCH_JAVA (else JAVA_HOME's java), BENCH_NODE, BENCH_JULIA, BENCH_PYTHON, BENCH_RUBY, BENCH_PERL, BENCH_ERL and BENCH_ELIXIR (the Elixir folder holding lib), BENCH_SWIPL, BENCH_OCTAVE (octave-cli), BENCH_PURE (Divooka Pure 2's Pure.exe), BENCH_STEW (stew.exe in a Divooka Compute folder) and BENCH_CHROME. A program whose tool is not found is skipped and said so.
+Build the compiled programs first (Build.ps1). Tools are found on PATH unless an environment variable names them: BENCH_JAVA (else JAVA_HOME's java), BENCH_NODE, BENCH_JULIA, BENCH_PYTHON, BENCH_RUBY, BENCH_PERL, BENCH_ERL and BENCH_ELIXIR (the Elixir folder holding lib), BENCH_SWIPL, BENCH_OCTAVE (octave-cli), BENCH_PURE (Divooka Pure 2's Pure.exe), BENCH_STEW (stew.exe in a Divooka Compute folder), BENCH_SPY and BENCH_SPY_AOT (SteelPython's spy.exe, from its full and its embedded Native AOT distribution) and BENCH_CHROME. A program whose tool is not found is skipped and said so.
 
 .PARAMETER Benchmark
 Mandelbrot (2000 x 2000, 1000 iterations) or RayTracer (RayTracer/scene.txt).
@@ -142,6 +142,9 @@ $tools = @{
     Octave = Find-Tool BENCH_OCTAVE @('octave-cli')
     Pure   = Find-Tool BENCH_PURE @('Pure', 'pure')
     Stew   = Find-Tool BENCH_STEW @('stew')
+    # SteelPython, Methodox's Python 3.12 on .NET: spy.exe of its full distribution (the .NET runtime, as Divooka Compute ships it) and of its embedded one (Native AOT)
+    Spy    = Find-Tool BENCH_SPY @('spy')
+    SpyAot = Find-Tool BENCH_SPY_AOT @()
     Chrome = Find-Tool BENCH_CHROME @('chrome') (Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe')
 }
 # Elixir runs on the Erlang runtime directly, as elixir.bat would start it, so the process measured is the one doing the work and not a batch file waiting for it.
@@ -168,6 +171,8 @@ $programs = if ($Benchmark -eq 'Mandelbrot')
         @{ Name = 'Divooka (stew, compiled)';    File = $tools.Stew;   Before = @("$scripts/Divooka/mandelbrot.dvk") }
         @{ Name = 'Divooka (AviatorBeta program)'; File = "$build/Divooka/MandelbrotDvk.exe" }
         @{ Name = 'Python';                      File = $tools.Python; Before = @("$scripts/Python/mandelbrotpython.py"); Slow = $true }
+        @{ Name = 'SteelPython';                 File = $tools.Spy;    Before = @("$scripts/Python/mandelbrotpython.py"); Slow = $true }
+        @{ Name = 'SteelPython (Native AOT)';    File = $tools.SpyAot; Before = @("$scripts/Python/mandelbrotpython.py"); Slow = $true }
         @{ Name = 'Ruby';                        File = $tools.Ruby;   Before = @("$scripts/Ruby/mandelbrot.ruby"); Slow = $true }
         @{ Name = 'Perl';                        File = $tools.Perl;   Before = @("$scripts/Perl/mandelbrot.pl"); Slow = $true }
         @{ Name = 'Elixir';                      File = $tools.Erl;    Before = $elixirPaths + @('-noshell', '-s', 'elixir', 'start_cli', '-extra', "$scripts/Elixir/mandelbrot.exs"); Slow = $true; Needs = $elixirPaths.Count }
@@ -192,6 +197,8 @@ else
         @{ Name = 'Divooka (stew, compiled)';    File = $tools.Stew;   Before = @("$scripts/Divooka/Ray Tracer.dvk") }
         @{ Name = 'Divooka (AviatorBeta program)'; File = "$build/Divooka/RayTracerDvk.exe" }
         @{ Name = 'Python';                      File = $tools.Python; Before = @("$scripts/Python/raytracer.py"); Slow = $true }
+        @{ Name = 'SteelPython';                 File = $tools.Spy;    Before = @("$scripts/Python/raytracer.py"); Slow = $true }
+        @{ Name = 'SteelPython (Native AOT)';    File = $tools.SpyAot; Before = @("$scripts/Python/raytracer.py"); Slow = $true }
         @{ Name = 'Ruby';                        File = $tools.Ruby;   Before = @("$scripts/Ruby/raytracer.rb"); Slow = $true }
         @{ Name = 'Perl';                        File = $tools.Perl;   Before = @("$scripts/Perl/raytracer.pl"); Slow = $true }
         @{ Name = 'Elixir';                      File = $tools.Erl;    Before = $elixirPaths + @('-noshell', '-s', 'elixir', 'start_cli', '-extra', "$scripts/Elixir/raytracer.exs"); Slow = $true; Needs = $elixirPaths.Count }
