@@ -173,14 +173,10 @@ Notes:
 
 Observations:
 
-* Damn JavaScript is fast.
-* Python is surprisingly slow.
-* GNU Octave is surprisingly slow.
-* JavaScript is surprisingly fast.
-* I know Octave is probably optimized for matrix operations - but raw iteration speed is 💩.
-* Ruby.. oh my Ruby...
-* GNU Octave seems very naive interpretation (but ues very little memory)?
-* Modern scripting languages are not usable without JIT.
+* JavaScript in the browser is the fastest here, and Node is within a few percent of C# AoT.
+* Python is much slower than every compiled or JIT-compiled language in this test.
+* GNU Octave is optimized for matrix operations, so raw iteration speed is not what it is built for; it also uses very little memory.
+* Modern scripting languages are not usable on a tight loop like this without a JIT.
 
 **Programming Languages Only**
 
