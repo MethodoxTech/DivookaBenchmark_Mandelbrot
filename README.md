@@ -161,7 +161,7 @@ Taken from March to October 2026 with the previous version of `Benchmark/Benchma
 |15|Ruby (3.2.2)|1 KB + 907 MB|49,489.82|52.45 MB|
 |16|Prolog (SWI) (With optimization)|2 KB + 42.8 MB|314,687.84|12.67 MB|
 |17|Kimi (2.6 Instant)|N/A|340,330.00|N/A|
-|18|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46Mb|
+|18|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46 MB|
 |19|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
 |20 (Tie)|Grok (Fast)|N/A|Failed|N/A|
 |20 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
