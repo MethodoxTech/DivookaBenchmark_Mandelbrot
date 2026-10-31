@@ -161,7 +161,7 @@ Taken from March to October 2026 with the previous version of `Benchmark/Benchma
 |15|Ruby (3.2.2)|1 KB + 907 MB|49,489.82|52.45 MB|
 |16|Prolog (SWI) (With optimization)|2 KB + 42.8 MB|314,687.84|12.67 MB|
 |17|Kimi (2.6 Instant)|N/A|340,330.00|N/A|
-|18|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46Mb|
+|18|GNU Octave (7.3.0)|2 KB + 2.07 GB|2,464,913.29 (41 min)|5.46 MB|
 |19|Divooka (0.75.2; Neo Editor)|8 KB + 2.67 GB|(Est.) 344,880,000 (95.8 Hr)|851 MB|
 |20 (Tie)|Grok (Fast)|N/A|Failed|N/A|
 |20 (Tie)|Gemini (Fast)|N/A|Failed|N/A|
@@ -173,14 +173,10 @@ Notes:
 
 Observations:
 
-* Damn JavaScript is fast.
-* Python is surprisingly slow.
-* GNU Octave is surprisingly slow.
-* JavaScript is surprisingly fast.
-* I know Octave is probably optimized for matrix operations - but raw iteration speed is 💩.
-* Ruby.. oh my Ruby...
-* GNU Octave seems very naive interpretation (but ues very little memory)?
-* Modern scripting languages are not usable without JIT.
+* JavaScript in the browser is the fastest here, and Node is within a few percent of C# AoT.
+* Python is much slower than every compiled or JIT-compiled language in this test.
+* GNU Octave is optimized for matrix operations, so raw iteration speed is not what it is built for; it also uses very little memory.
+* Modern scripting languages are not usable on a tight loop like this without a JIT.
 
 **Programming Languages Only**
 
