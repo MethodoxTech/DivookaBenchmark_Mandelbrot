@@ -1,8 +1,8 @@
 ![Banner](./Banner.png)
 
-# Divooka Mandelbrot Benchmark
+# Divooka Mandelbrot Benchmark(s)
 
-Benchmarks for Divooka, against the languages people would otherwise reach for: **Mandelbrot**, a tight loop of arithmetic, and **Ray Tracer**, a small but complete program that reads a scene from a file, recurses, and writes a picture.
+Benchmarks for Divooka among common languages people use: **Mandelbrot**, a tight loop of arithmetic, and **Ray Tracer**, a small but complete program that reads a scene from a real file and writes a picture.
 
 ## Experiment Set
 
@@ -14,7 +14,7 @@ Benchmarks for Divooka, against the languages people would otherwise reach for: 
 
 * 2000 x 2000, MaxIter = 1000 (correct output: 689833081); every program also takes the size as `[width] [height] [maxIter]`
 * Exercises integer math, floating point, loops, branches, function calls, and memory writes
-* Every run's printed checksum is compared with the reference's, and a run that differs is not counted
+* Every run's printed checksum is compared against the reference, and different results count as failure
 
 **Results (20261024)**
 
@@ -45,7 +45,7 @@ Every language run again with the method below: the median of five rounds, three
 
 Notes:
 
-* Size is the program and what it needs to run: a built program alone, or a script plus its runtime's installed folder. Go and Haskell are built ahead of time, so their toolchains (255 MB and 3.4 GB) are needed only to build. Divooka's documents run in a Divooka Compute folder (1.75 GB, everything included), which also carries Divooka Pure; the AviatorBeta program is a document built into a self-contained program of its own, as Divooka Compute's Publish builds one.
+* The Size includes the program itself and the code it needs to run: a built program alone, or a script plus its runtime's installed folder. Go and Haskell are built ahead of time, so their toolchains (255 MB and 3.4 GB) are needed only to build. Divooka's documents run in a Divooka Compute folder (1.75 GB, everything included), which also carries Divooka Pure; the AviatorBeta program is a document built into a self-contained program of its own, as Divooka Compute's Publish builds one.
 * "Divooka (Stewer, compiled)" compiles the document on every run, which is most of its distance from the AviatorBeta program; "Divooka (Stewer, interpreted)" is the node-by-node interpreter the editor's Interpreted run uses. The Neo editor's estimate in the earlier results, 95.8 hours, was that interpreter's ancestor; the estimate here is 3.8 hours, on a busier machine.
 * Pure 2 runs the C# version as a script, which Roslyn compiles when the run starts, inside Divooka Pure's process.
 * Estimates: see Method. GNU Octave measured 41 minutes for the full size in March; its estimate here is twice that, as Python's median is twice March's.
@@ -105,7 +105,7 @@ Measured as Mandelbrot's were, and **provisional** for the same reason. The prog
 
 Notes:
 
-* About a second of work is not much next to a runtime's start-up, so on this benchmark Java's and Julia's include a large share of starting, and Julia compiles the program on every run.
+* About a second of work is not much compared to a runtime's start-up, and on this benchmark Java's and Julia's include a large share of starting, also note that Julia compiles the program on every run.
 * The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
 * Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
 
