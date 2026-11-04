@@ -142,6 +142,51 @@ Notes:
 * A run of the .NET build includes starting the runtime and the tier's warm-up. On Mandelbrot that is a small part of 4.7 seconds.
 * Peak memory includes the .NET runtime (the full distribution) or the native executable (Native AOT).
 
+### Divooka's three runtimes (20261104)
+
+Divooka runs a document three ways, and `stew`, its command-line runner, offers all three: **compiled**, the document emitted as C# and compiled with Roslyn on every run, as Divooka Compute's Compiled run does; **interpreted**, the interpreter of Divooka Compute's Interpreted run, which calls each node's .NET member by reflection; and **NRI**, the No-Reflection Interpreter, which walks the same graph through bindings generated when its packages are built, and so runs documents where reflection is not to be had, as in a program compiled ahead of time with NativeAOT (`stew --mode nri`, new in this record). The three were measured together, alternated by the harness, with the `stew` of a Divooka Compute built from Parcel NExT's round-25 branch (`r25-nri`). **Provisional**: other builds and test suites were running on the machine throughout. Each benchmark ran in two sessions, and the tables are from the quieter: the processor was 16% to 100% busy before each Mandelbrot round (26% at the median), and 14% to 22% before each Ray Tracer round (18% at the median); the busier sessions are in the 20261104 record. Every run printed the reference's checksum, and every ray tracer run wrote the reference's picture.
+
+**Mandelbrot** (2000 x 2000, MaxIter = 1000)
+
+|Runtime|Run Time (ms, median)|Range (ms)|Peak Memory|
+|-|-:|-|-:|
+|Divooka (stew, compiled)|6,246.40|6,003.53 - 6,906.77|294.36 MB|
+|Divooka (stew, NRI)|(Est.) 6,344,109 (1.8 hr)|from 19,394 at 100 x 100 and 66,452 at 200 x 200|82.44 MB at 200 x 200|
+|Divooka (stew, interpreted)|(Est.) 8,731,089 (2.4 hr)|from 22,644 at 100 x 100 and 87,437 at 200 x 200|146.28 MB at 200 x 200|
+
+**Ray Tracer** (`RayTracer/scene.txt`)
+
+|Runtime|Run Time (ms, median)|Range (ms)|Peak Memory|
+|-|-:|-|-:|
+|Divooka (stew, compiled)|3,922.59|3,245.93 - 6,575.52|302.67 MB|
+|Divooka (stew, interpreted)|(Est.) 892,871 (15 min)|from 7,682 at 80 x 60 and 18,096 at 160 x 120|176.83 MB at 160 x 120|
+|Divooka (stew, NRI)|(Est.) 2,052,884 (34 min)|from 9,983 at 80 x 60 and 34,017 at 160 x 120|87.63 MB at 160 x 120|
+
+**What a run spends.** `stew --measure` times each stage of a run inside the process and counts its processor time and what it allocates, which a busy machine moves least. At the estimates' larger size, the modes rotated each round, three rounds, the processor 6% to 13% busy before each; the Run stage alone, so the compiled rows leave out their compile:
+
+|Benchmark|Runtime|Run (s, median)|Range (s)|Processor (s, median)|Range (s)|Allocated|
+|-|-|-:|-|-:|-|-:|
+|Mandelbrot 200 x 200|compiled|0.13|0.11 - 0.71|0.06|0.05 - 0.30|2.7 MB|
+|Mandelbrot 200 x 200|NRI|104.71|69.54 - 116.58|84.13|48.20 - 84.56|1.5 GB|
+|Mandelbrot 200 x 200|interpreted|107.81|84.28 - 150.25|68.53|59.53 - 119.97|26.4 GB|
+|Ray Tracer 160 x 120|compiled|0.16|0.10 - 0.26|0.02|0.00 - 0.17|5.9 MB|
+|Ray Tracer 160 x 120|NRI|41.31|39.64 - 73.27|27.13|25.72 - 58.16|16.4 GB|
+|Ray Tracer 160 x 120|interpreted|24.00|21.22 - 26.41|18.70|16.13 - 20.84|11.3 GB|
+
+**Starting.** The whole of a run too small to take any time (Mandelbrot at 10 x 10, MaxIter = 10), by `stew --measure`, the modes rotated each round, seven rounds, the processor 2% to 24% busy before each (9% at the median):
+
+|Runtime|Total (s, median)|Range (s)|Allocated|Peak Memory|
+|-|-:|-|-:|-:|
+|Divooka (stew, NRI)|0.47|0.40 - 0.69|6.2 MB|67.8 MB|
+|Divooka (stew, interpreted)|1.22|0.96 - 2.15|132.0 MB|138.4 MB|
+|Divooka (stew, compiled)|2.33|2.05 - 3.84|160.4 MB|263.3 MB|
+
+Notes:
+
+* NRI starts in under half the interpreter's time, a fifth of the compiled run's, and with half the interpreter's memory, because it does not open the document as the editor does: the interpreted and compiled runs spend 0.9 s and 101 MB opening it, and the compiled run 1.1 s more compiling it, where NRI reads the file in 0.06 s and spends 0.3 s loading its bindings.
+* Running, NRI is about the interpreter's speed on Mandelbrot, on a seventeenth of its allocation: a fifth to a quarter faster in both benchmark sessions' 200 x 200 runs (66 s to 87 s at the median, and 86 s to 107 s in the busier session), and level with it under `--measure` (105 s to 108 s), where its processor time was the higher. On the ray tracer it is slower, and allocates 45% more: 1.9 times the interpreter's time at 160 x 120 in the quieter session, 1.1 times in the busier one, 1.7 times under `--measure`. Where its time goes on the ray tracer, a program of records, lists and a call per intersection, has not been studied yet; until it is, NRI is the runtime to start quickly and run small, not yet the one to run fast.
+* The interpreted estimates are well below the 20261024 tables' (Mandelbrot 2.4 hours to their 3.8, the ray tracer 15 minutes to their hour): a later build, in a quieter session. Compare within a table, not across them.
+
 ### Earlier results
 
 Taken from March to October 2026 with the previous version of `Benchmark/Benchmark.ps1`, which ran each program five times in a row; the table shows each program's fastest run, and is kept as it was, but for the empty rows it held for Haskell, Julia, Perl, Elixir, Pure 2 and Divooka (GP; Stewer), which the 20261024 tables fill. The 20261024 tables above re-measure every language with the method below, so compare within a table, not across them.
@@ -236,6 +281,7 @@ The Divooka documents (`Scripts/Divooka/mandelbrot.dvk`, `RayTracer/Scripts/Divo
 ```
 stew Scripts/Divooka/mandelbrot.dvk 2000 2000 1000                                     # compiled, the default
 stew --mode interpreted Scripts/Divooka/mandelbrot.dvk 200 200 1000                    # the interpreter
+stew --mode nri Scripts/Divooka/mandelbrot.dvk 200 200 1000                            # NRI, the interpreter without reflection
 stew "RayTracer/Scripts/Divooka/Ray Tracer.dvk" RayTracer/scene.txt picture.ppm
 ```
 
@@ -248,7 +294,7 @@ From the 20261024 record on, every figure here is measured by `Benchmark/Benchma
 * **Median and range.** The time is the wall clock from starting the process to its exit, so a runtime's start-up is in it, as it is for anyone running the program. Each figure is the median of the rounds, with the fastest and slowest beside it; never an average, and never a best run. Five rounds for programs that take seconds, three for the slow ones.
 * **Peak memory** is the peak working set Windows recorded for the process. Elixir is started on the Erlang runtime directly, as `elixir.bat` would start it, so the process measured is the one doing the work.
 * **Right answers only.** The reference (C# AoT) runs first on every size used; a run counts only if it printed the reference's checksum - and, for the ray tracer, wrote a picture whose SHA-256 is the reference's. A wrong answer is reported and kept out of the figures.
-* **Estimates.** A program too slow to run at full size - GNU Octave and Divooka interpreted - runs at two smaller sizes instead (Mandelbrot 100 x 100 and 200 x 200 at 1000 iterations; the ray tracer's scene at 80 x 60 and 160 x 120 with one sample), and the full size's time is read off the line through the two, by the work each size does: the iterations a Mandelbrot run makes, which is its checksum, or the primary rays the ray tracer traces. Estimates are labelled.
+* **Estimates.** A program too slow to run at full size - GNU Octave, and Divooka interpreted and under NRI - runs at two smaller sizes instead (Mandelbrot 100 x 100 and 200 x 200 at 1000 iterations; the ray tracer's scene at 80 x 60 and 160 x 120 with one sample), and the full size's time is read off the line through the two, by the work each size does: the iterations a Mandelbrot run makes, which is its checksum, or the primary rays the ray tracer traces. Estimates are labelled.
 * **The browser** times itself: Chrome runs the page headless, and the page times its own render after a warm-up render, so its figure has no start-up in it and is not comparable with the others'. Its memory is not measured.
 * **The machine's load** is sampled before every round and reported with the results. A busy machine moves every figure; when it was busy, the record says so and the figures are provisional.
 
@@ -673,6 +719,52 @@ Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); pr
 Divooka (Stewer, interpreted), the ray tracer at full size, once, after the sessions above and while the Parcel NExT test suites ran on the same machine: 2,641,014 ms, `Checksum: 167196110`, and the reference's SHA-256.
 
 The reference's answers: Mandelbrot 689833081 at 2000 x 2000 (1703126 at 100 x 100 and 6823016 at 200 x 200, the work the estimates are drawn through); the ray tracer `Checksum: 167196110` and SHA-256 `c481fbea89bb8e6b7d2a97202005b1e3a65f3dfc5daf1abfff4c301debcf9c14` for scene.txt, 2617306 and `12aa506a...` at 80 x 60, 10420415 and `18bccd53...` at 160 x 120.
+
+## 20261104
+
+Divooka's three runtimes, compiled, interpreted and NRI, measured by `Benchmark/Benchmark.ps1 -Only 'Divooka (stew*'` as described under Method, on the machine of the earlier records, with `stew` 0.8.0 of a Divooka Compute built from Parcel NExT's round-25 branch (`r25-nri`), which adds `--mode nri`. The documents are the Writer's for the current format (v2.2), remade for this record; the 20261024 ones were v2.1, which this build refuses. Other builds and test suites were running on the machine through all of it, so every figure is provisional. Two sessions of each benchmark, one after the other; the second of each was the quieter, and is the one under Divooka's three runtimes.
+
+**Mandelbrot, first session**
+
+Benchmark: Mandelbrot (2000x2000x1000); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 57.8% (range 5.6% - 84.3%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Divooka (stew, compiled)|11,268.79|8,755.10 - 17,110.72|298.53|5|0||
+|Divooka (stew, NRI)|7,611,600.00|estimate, from medians 29,302 ms at 100x100x1000 and 85,717 ms at 200x200x1000|82.25|6|0|estimate; memory at 200x200x1000|
+|Divooka (stew, interpreted)|8,854,697.00|estimate, from medians 41,032 ms at 100x100x1000 and 106,608 ms at 200x200x1000|146.56|6|0|estimate; memory at 200x200x1000|
+
+**Mandelbrot, second session**
+
+Benchmark: Mandelbrot (2000x2000x1000); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 26% (range 16.4% - 100%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Divooka (stew, compiled)|6,246.40|6,003.53 - 6,906.77|294.36|5|0||
+|Divooka (stew, NRI)|6,344,109.00|estimate, from medians 19,394 ms at 100x100x1000 and 66,452 ms at 200x200x1000|82.44|6|0|estimate; memory at 200x200x1000|
+|Divooka (stew, interpreted)|8,731,089.00|estimate, from medians 22,644 ms at 100x100x1000 and 87,437 ms at 200x200x1000|146.28|6|0|estimate; memory at 200x200x1000|
+
+**Ray Tracer, first session**
+
+Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 100% (range 9.8% - 100%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Divooka (stew, compiled)|7,196.09|3,547.65 - 10,581.84|305.97|5|0||
+|Divooka (stew, interpreted)|2,401,708.00|estimate, from medians 18,812 ms at 80x60 and 46,847 ms at 160x120|179.20|6|0|estimate; memory at 160x120|
+|Divooka (stew, NRI)|2,879,133.00|estimate, from medians 19,821 ms at 80x60 and 53,460 ms at 160x120|87.87|6|0|estimate; memory at 160x120|
+
+**Ray Tracer, second session**
+
+Benchmark: RayTracer (scene.txt); rounds: 5 (slow programs and estimates: 3); processor load before each round: median 18.4% (range 13.8% - 22.4%)
+
+|Program|Median (ms)|Range (ms)|Peak memory (MB)|Runs|Wrong|Note|
+|-|-:|-|-:|-:|-:|-|
+|Divooka (stew, compiled)|3,922.59|3,245.93 - 6,575.52|302.67|5|0||
+|Divooka (stew, interpreted)|892,871.00|estimate, from medians 7,682 ms at 80x60 and 18,096 ms at 160x120|176.83|6|0|estimate; memory at 160x120|
+|Divooka (stew, NRI)|2,052,884.00|estimate, from medians 9,983 ms at 80x60 and 34,017 ms at 160x120|87.63|6|0|estimate; memory at 160x120|
+
+The `--measure` tables under Divooka's three runtimes were taken after these sessions with the same `stew`, one run per process, the three modes in turn and their order turned by one place each round, as the harness turns its programs; at the larger estimate size, the ray tracer's scene cut to 160 x 120 with one sample as the harness cuts it.
 
 ## Limitations
 
