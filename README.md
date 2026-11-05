@@ -109,29 +109,33 @@ Notes:
 * The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
 * Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
 
-### SteelPython (20261029)
+### SteelPython (20261105)
 
-[SteelPython](https://wiki.methodox.io/en/Utilities/SteelPython) is Methodox's implementation of Python 3.12 on .NET, which comes with Divooka Compute. It runs the same scripts as CPython (`Scripts/Python/mandelbrotpython.py`, `RayTracer/Scripts/Python/raytracer.py`), unchanged. Its rows were measured in a session of their own, with CPython beside it so that the two compare on the same machine at the same load (CPython 3.13.1 here, the tables above used 3.13.5): three rounds each, the processor 5% to 20% busy before each Mandelbrot round (10% at the median) and 2% to 5% before each Ray Tracer round. "SteelPython" is the `spy.exe` of its full distribution, on the .NET runtime, as Divooka Compute ships it; "SteelPython (Native AOT)" that of its embedded distribution, compiled ahead of time. SteelPython 0.1.0; every run printed the reference's checksum and wrote its picture.
+[SteelPython](https://wiki.methodox.io/en/Utilities/SteelPython) is Methodox's implementation of Python 3.12 on .NET, which comes with Divooka Compute. It runs the same scripts as CPython (`Scripts/Python/mandelbrotpython.py`, `RayTracer/Scripts/Python/raytracer.py`), unchanged. Its rows were measured in a session of their own, with CPython beside it so that the two compare on the same machine at the same load (CPython 3.13.1 here, the tables above used 3.13.5): three rounds each, the processor 1% to 7% busy before each Mandelbrot round (6% at the median) and 1% to 3% before each Ray Tracer round. "SteelPython (.NET 10)" is the `spy.exe` of its full distribution, on the .NET runtime, as Divooka Compute ships it; "SteelPython (Native AOT)" is the `spy.exe` of its embedded distribution. Both were built from its development version of 2026-11-05, on the way to 0.3.
 
 **Mandelbrot** (2000 x 2000, MaxIter = 1000)
 
 |Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
 |-|-:|-|-:|-:|
-|Python (CPython 3.13.1)|112,010.59|107,529.98 - 133,005.13|61.80 MB|1.00x|
-|SteelPython (Native AOT)|112,091.22|109,251.82 - 123,269.03|87.70 MB|1.00x|
-|SteelPython (.NET 10)|114,665.00|108,154.30 - 122,947.55|106.26 MB|1.02x|
+|SteelPython (.NET 10)|4,659.46|4,633.98 - 4,708.87|117.55 MB|0.05x (21.9 times faster)|
+|SteelPython (Native AOT)|96,290.56|93,578.59 - 103,001.28|87.58 MB|0.95x|
+|Python (CPython 3.13.1)|101,825.90|93,649.15 - 103,233.37|61.89 MB|1.00x|
 
 **Ray Tracer** (`RayTracer/scene.txt`)
 
 |Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
 |-|-:|-|-:|-:|
-|Python (CPython 3.13.1)|37,144.40|36,545.83 - 37,638.15|12.72 MB|1.00x|
-|SteelPython (.NET 10)|43,203.51|42,787.61 - 43,210.83|73.31 MB|1.16x|
-|SteelPython (Native AOT)|43,774.80|43,584.35 - 44,129.11|58.41 MB|1.18x|
+|SteelPython (.NET 10)|26,936.42|26,697.24 - 27,492.21|84.18 MB|0.81x|
+|Python (CPython 3.13.1)|33,074.51|33,017.26 - 33,469.34|12.81 MB|1.00x|
+|SteelPython (Native AOT)|39,985.67|39,284.44 - 40,018.70|57.47 MB|1.21x|
+
+The session of 20261029, before SteelPython had a compiling tier: Mandelbrot 114,665.00 ms (.NET 10) and 112,091.22 ms (Native AOT) against CPython's 112,010.59; Ray Tracer 43,203.51 ms and 43,774.80 ms against CPython's 37,144.40.
 
 Notes:
 
-* SteelPython keeps pace with CPython on Mandelbrot's arithmetic loop, where its interpreter holds ints and floats without objects; the ray tracer, which allocates a vector object for every intermediate result and calls a method per operation, is where it is slower. Its next version (0.3) changes how it executes and stores values, aiming at least at CPython's speed on both.
+* The .NET build now has an optimising tier: it compiles hot functions and loops to IL at run time, with ints and floats unboxed and small calls inlined, which RyuJIT turns into machine code. Mandelbrot's arithmetic loop is the best case for it. The ray tracer allocates a vector object for every intermediate result and calls a method per operation, so it gains less.
+* Native AOT cannot generate code at run time, so that build stays an interpreter and is slower than CPython on the ray tracer.
+* A run of the .NET build includes starting the runtime and the tier's warm-up. On Mandelbrot that is a small part of 4.7 seconds.
 * Peak memory includes the .NET runtime (the full distribution) or the native executable (Native AOT).
 
 ### Earlier results
