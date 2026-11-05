@@ -109,31 +109,35 @@ Notes:
 * The estimate's method was checked on Prolog, run at full size as well: it was estimated at 78.6 seconds from the two smaller scenes and measured at 83.1. Divooka's interpreter was then run once at full size too, and wrote the reference's picture in 44 minutes, while other test runs shared the machine; the estimate had said an hour, so its figure here is the run's, an upper bound.
 * Chrome's figure moved more than any other between runs, from 241 to 889 ms, with the page timing its own render after a warm-up.
 
-### SteelPython (20261105)
+### SteelPython and GraalPy (20261105)
 
-[SteelPython](https://wiki.methodox.io/en/Utilities/SteelPython) is Methodox's implementation of Python 3.12 on .NET, which comes with Divooka Compute. It runs the same scripts as CPython (`Scripts/Python/mandelbrotpython.py`, `RayTracer/Scripts/Python/raytracer.py`), unchanged. Its rows were measured in a session of their own, with CPython beside it so that the two compare on the same machine at the same load (CPython 3.13.1 here, the tables above used 3.13.5): three rounds each, the processor 1% to 7% busy before each Mandelbrot round (6% at the median) and 1% to 3% before each Ray Tracer round. "SteelPython (.NET 10)" is the `spy.exe` of its full distribution, on the .NET runtime, as Divooka Compute ships it; "SteelPython (Native AOT)" is the `spy.exe` of its embedded distribution. Both were built from its development version of 2026-11-05, on the way to 0.3.
+[SteelPython](https://wiki.methodox.io/en/Utilities/SteelPython) is Methodox's implementation of Python 3.12 on .NET, which comes with Divooka Compute. It runs the same scripts as CPython (`Scripts/Python/mandelbrotpython.py`, `RayTracer/Scripts/Python/raytracer.py`), unchanged. Its rows were measured in a session of their own, with CPython beside it so that the two compare on the same machine at the same load (CPython 3.13.1 here, the tables above used 3.13.5): three rounds each, the processor 3% to 8% busy before each Mandelbrot round (7% at the median) and 1% to 3% before each Ray Tracer round. "SteelPython (.NET 10)" is the `spy.exe` of its full distribution, on the .NET runtime, as Divooka Compute ships it; "SteelPython (Native AOT)" is the `spy.exe` of its embedded distribution. Both are SteelPython 0.3.0. "GraalPy" is [GraalPy](https://www.graalvm.org/python/) 25.5.5 community (Python 3.13.14), the `graalpy.exe` of its distribution, running the same scripts, unchanged.
 
 **Mandelbrot** (2000 x 2000, MaxIter = 1000)
 
 |Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
 |-|-:|-|-:|-:|
-|SteelPython (.NET 10)|4,659.46|4,633.98 - 4,708.87|117.55 MB|0.05x (21.9 times faster)|
-|SteelPython (Native AOT)|96,290.56|93,578.59 - 103,001.28|87.58 MB|0.95x|
-|Python (CPython 3.13.1)|101,825.90|93,649.15 - 103,233.37|61.89 MB|1.00x|
+|GraalPy|2,870.56|2,833.76 - 3,458.58|226.01 MB|0.03x (32.4 times faster)|
+|SteelPython (.NET 10)|4,565.08|4,552.29 - 4,666.49|117.38 MB|0.05x (20.4 times faster)|
+|SteelPython (Native AOT)|90,895.35|89,954.00 - 92,722.78|87.37 MB|0.98x|
+|Python (CPython 3.13.1)|92,973.14|91,633.27 - 99,350.59|61.88 MB|1.00x|
 
 **Ray Tracer** (`RayTracer/scene.txt`)
 
 |Platform|Run Time (ms, median)|Range (ms)|Peak Memory|Against CPython|
 |-|-:|-|-:|-:|
-|SteelPython (.NET 10)|26,936.42|26,697.24 - 27,492.21|84.18 MB|0.81x|
-|Python (CPython 3.13.1)|33,074.51|33,017.26 - 33,469.34|12.81 MB|1.00x|
-|SteelPython (Native AOT)|39,985.67|39,284.44 - 40,018.70|57.47 MB|1.21x|
+|GraalPy|5,943.42|5,914.93 - 6,296.88|243.17 MB|0.18x (5.6 times faster)|
+|SteelPython (.NET 10)|27,281.69|26,634.80 - 27,507.18|84.08 MB|0.82x|
+|Python (CPython 3.13.1)|33,164.67|32,979.56 - 33,957.37|12.78 MB|1.00x|
+|SteelPython (Native AOT)|39,117.72|39,100.25 - 39,867.97|57.37 MB|1.18x|
 
 The session of 20261029, before SteelPython had a compiling tier: Mandelbrot 114,665.00 ms (.NET 10) and 112,091.22 ms (Native AOT) against CPython's 112,010.59; Ray Tracer 43,203.51 ms and 43,774.80 ms against CPython's 37,144.40.
 
 Notes:
 
 * The .NET build now has an optimising tier: it compiles hot functions and loops to IL at run time, with ints and floats unboxed and small calls inlined, which RyuJIT turns into machine code. Mandelbrot's arithmetic loop is the best case for it. The ray tracer allocates a vector object for every intermediate result and calls a method per operation, so it gains less.
+* GraalPy compiles the program with Graal on background threads: it is the fastest of these on both benchmarks, ahead of SteelPython's .NET build by 1.6 times on Mandelbrot and 4.6 on the ray tracer. Its figures are the wall clock; a run takes more processor time than that (about 1.8 times on the ray tracer, measured separately), and more memory than the others.
+* Both programs are pure Python, numbers and small objects. They say nothing of programs that rest on C extensions.
 * Native AOT cannot generate code at run time, so that build stays an interpreter and is slower than CPython on the ray tracer.
 * A run of the .NET build includes starting the runtime and the tier's warm-up. On Mandelbrot that is a small part of 4.7 seconds.
 * Peak memory includes the .NET runtime (the full distribution) or the native executable (Native AOT).
@@ -225,7 +229,7 @@ pwsh Benchmark/Benchmark.ps1 -Benchmark RayTracer -Only 'C#','Divooka*'
 
 `-Only` takes several names when the script is called from PowerShell (`& ./Benchmark/Benchmark.ps1 -Benchmark Mandelbrot -Only @('Python', 'SteelPython*')`); through `pwsh -File`, the second name would be taken for `-Rounds`.
 
-`Benchmark.ps1` finds each language on PATH, or where an environment variable says: `BENCH_JAVA` (else `JAVA_HOME`'s), `BENCH_NODE`, `BENCH_JULIA`, `BENCH_PYTHON`, `BENCH_RUBY`, `BENCH_PERL`, `BENCH_ERL` with `BENCH_ELIXIR` (the folder holding Elixir's `lib`), `BENCH_SWIPL`, `BENCH_OCTAVE` (`octave-cli`), `BENCH_PURE` (`pure.exe`: Divooka Pure's, or Pure 2's own), `BENCH_STEW` (`stew.exe` in a Divooka Compute folder), `BENCH_SPY` and `BENCH_SPY_AOT` (SteelPython's `spy.exe`: of its full distribution, and of its embedded Native AOT one) and `BENCH_CHROME`. A program whose language is not found is skipped, and the run says so. Every run, and the summary table, is written under `Results/` (ignored by git).
+`Benchmark.ps1` finds each language on PATH, or where an environment variable says: `BENCH_JAVA` (else `JAVA_HOME`'s), `BENCH_NODE`, `BENCH_JULIA`, `BENCH_PYTHON`, `BENCH_RUBY`, `BENCH_PERL`, `BENCH_ERL` with `BENCH_ELIXIR` (the folder holding Elixir's `lib`), `BENCH_SWIPL`, `BENCH_OCTAVE` (`octave-cli`), `BENCH_PURE` (`pure.exe`: Divooka Pure's, or Pure 2's own), `BENCH_STEW` (`stew.exe` in a Divooka Compute folder), `BENCH_GRAALPY` (the `graalpy.exe` of a GraalPy distribution, not a venv's launcher, whose peak memory would be its own), `BENCH_SPY` and `BENCH_SPY_AOT` (SteelPython's `spy.exe`: of its full distribution, and of its embedded Native AOT one) and `BENCH_CHROME`. A program whose language is not found is skipped, and the run says so. Every run, and the summary table, is written under `Results/` (ignored by git).
 
 The Divooka documents (`Scripts/Divooka/mandelbrot.dvk`, `RayTracer/Scripts/Divooka/Ray Tracer.dvk`) are written by the Divooka examples Writer, `DivookaExamplesWriter benchmarks <this folder>`, from recipes in the Parcel NExT repository (`MandelbrotRecipe`, `RayTracerBenchmarkRecipe`). Remake them after a Divooka format change rather than editing them. Run them with the `stew` of a Divooka Compute distribution:
 
