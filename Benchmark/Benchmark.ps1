@@ -180,6 +180,7 @@ $programs = if ($Benchmark -eq 'Mandelbrot')
         @{ Name = 'Elixir';                      File = $tools.Erl;    Before = $elixirPaths + @('-noshell', '-s', 'elixir', 'start_cli', '-extra', "$scripts/Elixir/mandelbrot.exs"); Slow = $true; Needs = $elixirPaths.Count }
         @{ Name = 'Prolog (SWI)';                File = $tools.Swipl;  Before = @('-q', "$scripts/Prolog/madelbrot.pl"); Slow = $true }
         @{ Name = 'GNU Octave';                  File = $tools.Octave; Before = @("$scripts/GNUOctave/mandelbrot.m"); Estimate = $true }
+        @{ Name = 'Divooka (stew, NRI)';         File = $tools.Stew;   Before = @('--mode', 'nri', "$scripts/Divooka/mandelbrot.dvk"); Estimate = $true }
         @{ Name = 'Divooka (stew, interpreted)'; File = $tools.Stew;   Before = @('--mode', 'interpreted', "$scripts/Divooka/mandelbrot.dvk"); Estimate = $true }
     )
 }
@@ -207,6 +208,7 @@ else
         @{ Name = 'Elixir';                      File = $tools.Erl;    Before = $elixirPaths + @('-noshell', '-s', 'elixir', 'start_cli', '-extra', "$scripts/Elixir/raytracer.exs"); Slow = $true; Needs = $elixirPaths.Count }
         @{ Name = 'Prolog (SWI)';                File = $tools.Swipl;  Before = @('-q', "$scripts/Prolog/raytracer.pl"); Slow = $true }
         @{ Name = 'GNU Octave';                  File = $tools.Octave; Before = @("$scripts/GNUOctave/raytracer.m"); Estimate = $true }
+        @{ Name = 'Divooka (stew, NRI)';         File = $tools.Stew;   Before = @('--mode', 'nri', "$scripts/Divooka/Ray Tracer.dvk"); Estimate = $true }
         @{ Name = 'Divooka (stew, interpreted)'; File = $tools.Stew;   Before = @('--mode', 'interpreted', "$scripts/Divooka/Ray Tracer.dvk"); Estimate = $true }
     )
 }
